@@ -340,7 +340,7 @@ export function LeadJourneyPanel({
   collapsibleDates = true,
   scrollClassName,
 }: LeadJourneyPanelProps) {
-  const daysRaw = useMemo(() => getJourneyForLead(lead), [lead.id, lead.leadId]);
+  const daysRaw = useMemo(() => getJourneyForLead(lead), [lead]);
   const [filter, setFilter] = useState<JourneyCategory>("all");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
@@ -350,7 +350,9 @@ export function LeadJourneyPanel({
   useEffect(() => {
     if (!collapsibleDates) return;
     const fd = daysFiltered[0]?.dateLabel;
-    setExpanded(fd ? { [fd]: true } : {});
+    queueMicrotask(() => {
+      setExpanded(fd ? { [fd]: true } : {});
+    });
   }, [collapsibleDates, lead.id, filter, daysFiltered]);
 
   const toggleDate = useCallback((label: string) => {

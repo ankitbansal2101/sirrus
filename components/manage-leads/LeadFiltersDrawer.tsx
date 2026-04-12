@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { MdClose, MdKeyboardArrowDown } from "react-icons/md";
 import { IoChevronBack } from "react-icons/io5";
 import { LEAD_STAGE_OPTIONS } from "@/lib/lead-stage-options";
+import { useClientMounted } from "@/lib/use-client-mounted";
 
 const PANEL_BG = "rgb(227, 227, 227)";
 const HEADER_BG = "rgba(248, 248, 248, 0.698)";
@@ -142,6 +143,7 @@ function MultiSelectPill({
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLUListElement>(null);
+  const listboxId = useId();
   const [menuPos, setMenuPos] = useState<{ top: number; left: number; width: number } | null>(null);
   const open = openDropdown === dropdownId && !disabled;
 
@@ -152,10 +154,7 @@ function MultiSelectPill({
   }, []);
 
   useLayoutEffect(() => {
-    if (!open) {
-      setMenuPos(null);
-      return;
-    }
+    if (!open) return;
     updateMenuPos();
     const ro = new ResizeObserver(updateMenuPos);
     if (rootRef.current) ro.observe(rootRef.current);
@@ -184,6 +183,7 @@ function MultiSelectPill({
     open && menuPos ? (
       <ul
         ref={menuRef}
+        id={listboxId}
         role="listbox"
         aria-multiselectable="true"
         className="max-h-52 overflow-y-auto rounded-2xl border border-slate-200/90 bg-white py-1 shadow-lg [scrollbar-width:thin]"
@@ -225,6 +225,7 @@ function MultiSelectPill({
         <div
           role="combobox"
           aria-expanded={open}
+          aria-controls={open ? listboxId : undefined}
           aria-haspopup="listbox"
           aria-disabled={disabled}
           className={`flex w-full min-h-10 items-stretch gap-1 rounded-2xl text-left outline-none ${
@@ -374,7 +375,7 @@ export function LeadFiltersDrawer({
   open: boolean;
   onClose: () => void;
 }) {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useClientMounted();
   const [missedDisp, setMissedDisp] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -397,11 +398,10 @@ export function LeadFiltersDrawer({
   const [revisits, setRevisits] = useState<string[]>([]);
   const [droppedReason, setDroppedReason] = useState<string[]>([]);
 
-  useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    if (!open) setOpenDropdown(null);
-  }, [open]);
+  const handleClose = useCallback(() => {
+    setOpenDropdown(null);
+    onClose();
+  }, [onClose]);
 
   const handleClear = useCallback(() => {
     setLeadCreateFrom("");
@@ -447,11 +447,11 @@ export function LeadFiltersDrawer({
         setOpenDropdown(null);
         return;
       }
-      onClose();
+      handleClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose, openDropdown]);
+  }, [open, handleClose, openDropdown]);
 
   if (!mounted || !open) return null;
 
@@ -461,7 +461,7 @@ export function LeadFiltersDrawer({
         type="button"
         aria-label="Close filters"
         className="fixed inset-0 z-[1000] bg-black/25"
-        onClick={onClose}
+        onClick={handleClose}
       />
       <div
         className="fixed top-0 right-0 z-[1001] flex h-full max-h-screen w-11/12 max-w-full flex-col overflow-hidden shadow-lg transition-transform duration-300 sm:w-[85vw] md:w-[40vw]"
@@ -474,7 +474,7 @@ export function LeadFiltersDrawer({
           <div className="flex items-center">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex h-9 w-9 items-center justify-center rounded-full"
               style={{ backgroundColor: "rgb(216, 216, 216)" }}
               aria-label="Back"
@@ -724,7 +724,7 @@ export function LeadFiltersDrawer({
           <div className="flex w-full justify-center">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-3xl py-3 text-sm font-semibold"
               style={{ backgroundColor: ACCENT, color: "rgb(245, 245, 245)", borderColor: ACCENT }}
             >

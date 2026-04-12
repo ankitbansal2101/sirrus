@@ -121,6 +121,7 @@ export function ManageLeadsView() {
   return (
     <>
       <LeadDetailDrawer
+        key={selectedId ?? "closed"}
         lead={selectedLead}
         onClose={() => setSelectedId(null)}
         onStageChange={handleStageChange}

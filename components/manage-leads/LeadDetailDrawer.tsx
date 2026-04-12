@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useClientMounted } from "@/lib/use-client-mounted";
 import type { LeadRow } from "@/lib/leads-sample-data";
 import { LeadActivityHub } from "./LeadActivityHub";
 import { LeadDetailLeftRail } from "./LeadDetailLeftRail";
@@ -34,14 +35,8 @@ export function LeadDetailDrawer({
   onClose: () => void;
   onStageChange?: (stage: string) => void;
 }) {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useClientMounted();
   const [detailTab, setDetailTab] = useState(0);
-
-  useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    if (lead) setDetailTab(0);
-  }, [lead]);
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
@@ -63,7 +58,7 @@ export function LeadDetailDrawer({
 
   if (!mounted || !lead) return null;
 
-  const patchStage = onStageChange ?? ((_stage: string) => {});
+  const patchStage = onStageChange ?? (() => {});
 
   return createPortal(
     <div
@@ -309,7 +304,7 @@ export function LeadDetailDrawer({
                   lead={lead}
                   initialStage={lead.stage}
                   onCancel={() => setDetailTab(0)}
-                  onSave={(stage, _payload) => {
+                  onSave={(stage) => {
                     patchStage(stage);
                     setDetailTab(0);
                   }}
