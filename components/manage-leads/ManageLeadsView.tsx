@@ -11,6 +11,7 @@ import {
   type LeadRow,
 } from "@/lib/leads-sample-data";
 import { LeadDetailDrawer } from "./LeadDetailDrawer";
+import { LeadFiltersDrawer } from "./LeadFiltersDrawer";
 import { IoCloudUpload } from "react-icons/io5";
 import {
   MdAdd,
@@ -97,6 +98,7 @@ export function ManageLeadsView() {
   const [page, setPage] = useState(1);
   const [leads, setLeads] = useState<LeadRow[]>(() => [...SAMPLE_LEADS]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const selectedLead = useMemo(
     () => (selectedId ? (leads.find((l) => l.id === selectedId) ?? null) : null),
     [leads, selectedId],
@@ -123,6 +125,7 @@ export function ManageLeadsView() {
         onClose={() => setSelectedId(null)}
         onStageChange={handleStageChange}
       />
+      <LeadFiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} />
       <div className="mt-2 flex items-center justify-between py-3">
         <div className="flex flex-row items-center">
           <span className="ml-4 self-center text-lg font-semibold" style={{ color: "rgb(52, 54, 156)" }}>
@@ -278,15 +281,17 @@ export function ManageLeadsView() {
                 </div>
               ))}
             </div>
-            <div
-              className="ml-4 flex h-[2.75rem] w-[6.875rem] cursor-pointer flex-row gap-2 rounded-full border px-5 py-2.5"
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(true)}
+              className="ml-4 flex h-[2.75rem] w-[6.875rem] cursor-pointer flex-row items-center gap-2 rounded-full border px-5 py-2.5"
               style={{ borderColor: "rgb(194, 188, 228)" }}
             >
-              <Image src="/assets/images/FilterIcon.svg" alt="filter" width={20} height={20} />
+              <Image src="/assets/images/FilterIcon.svg" alt="" width={20} height={20} />
               <span className="text-center text-base font-medium" style={{ color: "rgb(31, 23, 80)" }}>
                 Filter
               </span>
-            </div>
+            </button>
           </div>
         </div>
 
