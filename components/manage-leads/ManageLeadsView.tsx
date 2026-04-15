@@ -10,6 +10,7 @@ import {
   stageBg,
   type LeadRow,
 } from "@/lib/leads-sample-data";
+import { AddLeadFormOverlay } from "./AddLeadFormOverlay";
 import { LeadDetailDrawer } from "./LeadDetailDrawer";
 import { LeadFiltersDrawer } from "./LeadFiltersDrawer";
 import { IoCloudUpload } from "react-icons/io5";
@@ -99,6 +100,8 @@ export function ManageLeadsView() {
   const [leads, setLeads] = useState<LeadRow[]>(() => [...SAMPLE_LEADS]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [addLeadOpen, setAddLeadOpen] = useState(false);
+  const [leadFormLead, setLeadFormLead] = useState<LeadRow | null>(null);
   const selectedLead = useMemo(
     () => (selectedId ? (leads.find((l) => l.id === selectedId) ?? null) : null),
     [leads, selectedId],
@@ -112,6 +115,21 @@ export function ManageLeadsView() {
     [selectedId],
   );
 
+  const openEditLeadFormFromDrawer = useCallback(() => {
+    if (!selectedLead) return;
+    setLeadFormLead(selectedLead);
+    setAddLeadOpen(true);
+  }, [selectedLead]);
+
+  const patchSelectedLead = useCallback(
+    (patch: Partial<LeadRow>) => {
+      if (!selectedId) return;
+      setLeads((prev) => prev.map((l) => (l.id === selectedId ? { ...l, ...patch } : l)));
+      setLeadFormLead((cur) => (cur && cur.id === selectedId ? { ...cur, ...patch } : cur));
+    },
+    [selectedId],
+  );
+
   const total = 5400;
   const totalPages = Math.ceil(total / pageSize);
 
@@ -120,11 +138,22 @@ export function ManageLeadsView() {
 
   return (
     <>
+      <AddLeadFormOverlay
+        key={`${addLeadOpen}-${leadFormLead?.id ?? "new"}`}
+        open={addLeadOpen}
+        lead={leadFormLead}
+        onClose={() => {
+          setAddLeadOpen(false);
+          setLeadFormLead(null);
+        }}
+      />
       <LeadDetailDrawer
         key={selectedId ?? "closed"}
         lead={selectedLead}
         onClose={() => setSelectedId(null)}
         onStageChange={handleStageChange}
+        onRequestEditLeadForm={openEditLeadFormFromDrawer}
+        onPatchLead={patchSelectedLead}
       />
       <LeadFiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} />
       <div className="mt-2 flex items-center justify-between py-3">
@@ -175,6 +204,10 @@ export function ManageLeadsView() {
           </button>
           <button
             type="button"
+            onClick={() => {
+              setLeadFormLead(null);
+              setAddLeadOpen(true);
+            }}
             className="flex cursor-pointer items-center justify-center rounded-3xl px-5 py-3 text-sm font-semibold opacity-100"
             style={{
               backgroundColor: "rgb(52, 54, 156)",

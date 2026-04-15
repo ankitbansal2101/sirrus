@@ -130,6 +130,8 @@ function MultiSelectPill({
   disabled,
   onChange,
   border2,
+  /** When set, opening the menu shows this message instead of options (e.g. sub source gated on one parent source). */
+  blockedMessage,
 }: {
   dropdownId: string;
   openDropdown: string | null;
@@ -140,12 +142,15 @@ function MultiSelectPill({
   disabled?: boolean;
   onChange: (next: string[]) => void;
   border2?: boolean;
+  blockedMessage?: string;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLUListElement>(null);
   const listboxId = useId();
   const [menuPos, setMenuPos] = useState<{ top: number; left: number; width: number } | null>(null);
-  const open = openDropdown === dropdownId && !disabled;
+  const blocked = Boolean(blockedMessage);
+  const cannotOpen = Boolean(disabled) && !blocked;
+  const open = openDropdown === dropdownId && !cannotOpen;
 
   const updateMenuPos = useCallback(() => {
     if (!rootRef.current) return;
@@ -184,8 +189,9 @@ function MultiSelectPill({
       <ul
         ref={menuRef}
         id={listboxId}
-        role="listbox"
-        aria-multiselectable="true"
+        role={blocked ? "dialog" : "listbox"}
+        aria-multiselectable={blocked ? undefined : true}
+        aria-label={blocked ? "Sub source unavailable" : undefined}
         className="max-h-52 overflow-y-auto rounded-2xl border border-slate-200/90 bg-white py-1 shadow-lg [scrollbar-width:thin]"
         style={{
           position: "fixed",
@@ -195,27 +201,33 @@ function MultiSelectPill({
           zIndex: 1002,
         }}
       >
-        {options.map((opt) => {
-          const checked = values.includes(opt);
-          return (
-            <li key={opt} role="option" aria-selected={checked}>
-              <label className="flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm font-medium hover:bg-[#f4f5fc]">
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => onChange(toggleInList(values, opt))}
-                  className="h-4 w-4 shrink-0 rounded border-slate-300 accent-[#34369C]"
-                />
-                <span className="min-w-0 text-[#1F1750]">{opt}</span>
-              </label>
-            </li>
-          );
-        })}
+        {blocked ? (
+          <li role="presentation" className="list-none px-4 py-3 font-outfit text-sm leading-snug text-[#5c5878]">
+            {blockedMessage}
+          </li>
+        ) : (
+          options.map((opt) => {
+            const checked = values.includes(opt);
+            return (
+              <li key={opt} role="option" aria-selected={checked}>
+                <label className="flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm font-medium hover:bg-[#f4f5fc]">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => onChange(toggleInList(values, opt))}
+                    className="h-4 w-4 shrink-0 rounded border-slate-300 accent-[#34369C]"
+                  />
+                  <span className="min-w-0 text-[#1F1750]">{opt}</span>
+                </label>
+              </li>
+            );
+          })
+        )}
       </ul>
     ) : null;
 
   const toggleOpen = () => {
-    if (disabled) return;
+    if (cannotOpen) return;
     setOpenDropdown(open ? null : dropdownId);
   };
 
@@ -227,9 +239,9 @@ function MultiSelectPill({
           aria-expanded={open}
           aria-controls={open ? listboxId : undefined}
           aria-haspopup="listbox"
-          aria-disabled={disabled}
+          aria-disabled={cannotOpen}
           className={`flex w-full min-h-10 items-stretch gap-1 rounded-2xl text-left outline-none ${
-            disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+            cannotOpen ? "cursor-not-allowed opacity-50" : "cursor-pointer"
           }`}
           style={{
             backgroundColor: FIELD_BG,
@@ -239,13 +251,13 @@ function MultiSelectPill({
           }}
           onClick={toggleOpen}
           onKeyDown={(e) => {
-            if (disabled) return;
+            if (cannotOpen) return;
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               toggleOpen();
             }
           }}
-          tabIndex={disabled ? -1 : 0}
+          tabIndex={cannotOpen ? -1 : 0}
         >
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 py-1.5 pl-4">
             {values.length === 0 ? (
@@ -281,7 +293,7 @@ function MultiSelectPill({
           <button
             type="button"
             tabIndex={-1}
-            disabled={disabled}
+            disabled={cannotOpen}
             aria-label={open ? "Close options" : "Open options"}
             className="flex shrink-0 items-center justify-center self-center px-2 py-2"
             onMouseDown={(e) => e.preventDefault()}
@@ -551,7 +563,7 @@ export function LeadFiltersDrawer({
                 options={SOURCES}
                 onChange={(next) => {
                   setSource(next);
-                  if (next.length === 0) setSubSource([]);
+                  if (next.length !== 1) setSubSource([]);
                 }}
               />
             </div>
@@ -567,6 +579,7 @@ export function LeadFiltersDrawer({
                 options={SUB_SOURCES}
                 onChange={setSubSource}
                 disabled={source.length === 0}
+                blockedMessage={source.length > 1 ? "Select one source only." : undefined}
               />
             </div>
 

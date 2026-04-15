@@ -1,103 +1,78 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { useClientMounted } from "@/lib/use-client-mounted";
-import type { LeadRow } from "@/lib/leads-sample-data";
-import { LeadActivityHub } from "./LeadActivityHub";
-import { LeadDetailLeftRail } from "./LeadDetailLeftRail";
-import { LeadDetailMobileBar } from "./LeadDetailMobileBar";
-import { LeadDetailProjectStrip } from "./LeadDetailProjectStrip";
-import { LeadJourneyPanel } from "./LeadJourneyPanel";
-import { LeadOverviewPanel } from "./LeadOverviewPanel";
+import { useCallback, useState } from "react";
 import { LEAD_DETAIL_TABS } from "@/lib/lead-detail-tabs";
-import { LeadStageChangeForm } from "./LeadStageChangeForm";
+import type { LeftRailFieldId } from "@/lib/left-rail-field-registry";
+import type { LeadRow } from "@/lib/leads-sample-data";
+import { LeadActivityHub } from "@/components/manage-leads/LeadActivityHub";
+import { LeadDetailLeftRail } from "@/components/manage-leads/LeadDetailLeftRail";
+import { LeadDetailMobileBar } from "@/components/manage-leads/LeadDetailMobileBar";
+import { LeadDetailProjectStrip } from "@/components/manage-leads/LeadDetailProjectStrip";
+import { LeadJourneyPanel } from "@/components/manage-leads/LeadJourneyPanel";
+import { LeadOverviewPanel } from "@/components/manage-leads/LeadOverviewPanel";
+import { LeadStageChangeForm } from "@/components/manage-leads/LeadStageChangeForm";
 
 function fundingForDrawer(lead: LeadRow) {
   if (lead.drawerFundingSource) return lead.drawerFundingSource;
   return lead.funding !== "-" ? lead.funding : "-";
 }
 
-export function LeadDetailDrawer({
+type Props = {
+  lead: LeadRow;
+  leftRailFieldIds: LeftRailFieldId[];
+  onLeadPatch: (patch: Partial<LeadRow>) => void;
+  onStageChange: (stage: string) => void;
+  /** When true, outer chrome is flat so the preview reads as one widget on a builder canvas (admin only). */
+  builderCanvas?: boolean;
+};
+
+/**
+ * Non-portal replica of the lead detail drawer for admin preview.
+ * Left-rail summary rows follow `leftRailFieldIds` (live from parent state).
+ */
+export function LeadDetailPagePreview({
   lead,
-  onClose,
+  leftRailFieldIds,
+  onLeadPatch,
   onStageChange,
-  onRequestEditLeadForm,
-  onPatchLead,
-}: {
-  lead: LeadRow | null;
-  onClose: () => void;
-  onStageChange?: (stage: string) => void;
-  /** Opens the lead form overlay prepopulated for the current lead (e.g. from Lead Overview). */
-  onRequestEditLeadForm?: () => void;
-  /** Merge partial updates into the selected lead (inline edits in drawer / overview). */
-  onPatchLead?: (patch: Partial<LeadRow>) => void;
-}) {
-  const mounted = useClientMounted();
+  builderCanvas = false,
+}: Props) {
   const [detailTab, setDetailTab] = useState(0);
 
-  const handleKey = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+  const patchStage = useCallback(
+    (stage: string) => {
+      onStageChange(stage);
     },
-    [onClose],
+    [onStageChange],
   );
 
-  useEffect(() => {
-    if (!lead) return;
-    window.addEventListener("keydown", handleKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", handleKey);
-      document.body.style.overflow = prev;
-    };
-  }, [lead, handleKey]);
+  const rootChrome = builderCanvas
+    ? "rounded-lg border border-slate-200/90 bg-white shadow-none"
+    : "rounded-2xl border border-slate-300/60 bg-[#e8ebf4] shadow-[0_12px_40px_-12px_rgba(31,23,80,0.18)]";
 
-  if (!mounted || !lead) return null;
-
-  const patchStage = onStageChange ?? (() => {});
-
-  return createPortal(
+  return (
     <div
-      id="root-modal"
-      className="fixed inset-0 z-[100] flex h-full w-full flex-col bg-[#e8ebf4] md:flex-row"
-      role="presentation"
+      className={`flex h-full min-h-[220px] w-full flex-col overflow-hidden md:flex-row ${rootChrome}`}
+      aria-label="Lead detail layout preview"
     >
       <aside className="hidden h-full min-h-0 w-[300px] shrink-0 flex-col shadow-[6px_0_40px_-12px_rgba(31,23,80,0.14)] md:flex lg:w-[352px]">
-        <LeadDetailLeftRail lead={lead} onEditLead={onRequestEditLeadForm} onPatchLead={onPatchLead} />
+        <LeadDetailLeftRail
+          lead={lead}
+          summaryFieldIds={leftRailFieldIds}
+          onPatchLead={onLeadPatch}
+        />
       </aside>
 
-      <div
-        className="flex min-h-0 min-w-0 flex-1 flex-col border-[#d5d9e6] bg-[#eef1f8] md:border-l"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="lead-detail-title"
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col border-[#d5d9e6] bg-[#eef1f8] md:border-l">
         <div className="flex shrink-0 flex-col gap-2 border-b border-slate-200/70 bg-white px-4 py-3 md:px-5 md:py-4">
-          <h2 id="lead-detail-title" className="sr-only">
-            Lead details — {lead.name}, {lead.leadId}
-          </h2>
           <div className="flex items-start gap-3">
             <div className="min-w-0 flex-1">
               <LeadDetailProjectStrip projectName={lead.project} />
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="mt-1 shrink-0 rounded-full p-2 text-[#5c5878] transition-colors hover:bg-[#f0f2f8] hover:text-[#1F1750]"
-            >
-              <svg width="20" height="20" viewBox="0 0 15 15" fill="none" aria-hidden>
-                <path
-                  d="M10.9688 3.21871C11.1933 2.99416 11.5567 2.99416 11.7813 3.21871C12.0056 3.44328 12.0057 3.80673 11.7813 4.03121L8.31251 7.49996L11.7813 10.9687L11.8555 11.0586C12.0026 11.2817 11.9777 11.5848 11.7813 11.7812C11.5849 11.9776 11.2818 12.0026 11.0586 11.8554L10.9688 11.7812L7.50001 8.31246L4.03126 11.7812C3.80677 12.0057 3.44332 12.0056 3.21876 11.7812C2.99421 11.5567 2.99421 11.1933 3.21876 10.9687L6.68751 7.49996L3.21876 4.03121L3.14454 3.94137C2.99723 3.71819 3.0223 3.41517 3.21876 3.21871C3.41522 3.02225 3.71823 2.99719 3.94141 3.14449L4.03126 3.21871L7.50001 6.68746L10.9688 3.21871Z"
-                  fill="currentColor"
-                />
-              </svg>
-            </button>
+            <span className="mt-1 shrink-0 rounded-full border border-dashed border-slate-200 px-2 py-1 font-outfit text-[10px] font-semibold uppercase tracking-wide text-[#8b87a8]">
+              Preview
+            </span>
           </div>
           <div className="min-w-0 md:hidden">
             <span className="truncate font-outfit text-sm font-semibold text-[#1F1750]">{lead.name}</span>
@@ -107,7 +82,7 @@ export function LeadDetailDrawer({
           </div>
         </div>
 
-        <LeadDetailMobileBar lead={lead} onEditLead={onRequestEditLeadForm} />
+        <LeadDetailMobileBar lead={lead} />
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-3 pt-2 md:px-4 md:pb-4">
           <div className="w-full shrink-0 overflow-x-auto overflow-y-hidden pb-2 [scrollbar-width:thin]">
@@ -245,7 +220,7 @@ export function LeadDetailDrawer({
               ) : detailTab === 2 ? (
                 <LeadJourneyPanel lead={lead} variant="full" showFilters collapsibleDates />
               ) : detailTab === 3 ? (
-                <LeadOverviewPanel lead={lead} onEditLead={onRequestEditLeadForm} onPatchLead={onPatchLead} />
+                <LeadOverviewPanel lead={lead} onPatchLead={onLeadPatch} />
               ) : detailTab === 4 ? (
                 <LeadStageChangeForm
                   key={lead.id}
@@ -266,7 +241,6 @@ export function LeadDetailDrawer({
           </div>
         </div>
       </div>
-    </div>,
-    document.body,
+    </div>
   );
 }

@@ -7,8 +7,6 @@ export type LeadStatusHistoryEntry = {
   /** Short label shown in pill, e.g. "NEGOTIATION" */
   statusLabel: string;
   tone: StatusHistoryTone;
-  /** Days in stage; `null` renders as "—" */
-  durationDays: number | null;
   modifiedLabel: string;
   modifiedBy: string;
 };
@@ -31,7 +29,6 @@ const KAWAL_STATUS_HISTORY: LeadStatusHistoryEntry[] = [
     id: "h1",
     statusLabel: "BOOKED",
     tone: "green",
-    durationDays: null,
     modifiedLabel: "10 Apr 2026, 7:30 PM",
     modifiedBy: "kawal gulati",
   },
@@ -39,7 +36,6 @@ const KAWAL_STATUS_HISTORY: LeadStatusHistoryEntry[] = [
     id: "h2",
     statusLabel: "NEGOTIATION",
     tone: "orange",
-    durationDays: 8,
     modifiedLabel: "02 Apr 2026",
     modifiedBy: "Prasun Adara",
   },
@@ -47,7 +43,6 @@ const KAWAL_STATUS_HISTORY: LeadStatusHistoryEntry[] = [
     id: "h3",
     statusLabel: "SITE REVISIT DONE",
     tone: "blue",
-    durationDays: 4,
     modifiedLabel: "25 Mar 2026",
     modifiedBy: "Sunil Sabat",
   },
@@ -55,7 +50,6 @@ const KAWAL_STATUS_HISTORY: LeadStatusHistoryEntry[] = [
     id: "h4",
     statusLabel: "SITE VISIT DONE",
     tone: "orange",
-    durationDays: 1,
     modifiedLabel: "21 Mar 2026",
     modifiedBy: "Vishakh G",
   },
@@ -63,7 +57,6 @@ const KAWAL_STATUS_HISTORY: LeadStatusHistoryEntry[] = [
     id: "h5",
     statusLabel: "SITE VISIT PLANNED",
     tone: "green",
-    durationDays: 0,
     modifiedLabel: "20 Mar 2026",
     modifiedBy: "kawal gulati",
   },
@@ -75,7 +68,6 @@ const DEMO_STATUS_HISTORY: LeadStatusHistoryEntry[] = [
     id: "d1",
     statusLabel: "NEGOTIATION",
     tone: "orange",
-    durationDays: null,
     modifiedLabel: "10 Apr 2026",
     modifiedBy: "Prasun Adara",
   },
@@ -83,7 +75,6 @@ const DEMO_STATUS_HISTORY: LeadStatusHistoryEntry[] = [
     id: "d2",
     statusLabel: "SITE REVISIT DONE",
     tone: "blue",
-    durationDays: 23,
     modifiedLabel: "18 Mar 2026",
     modifiedBy: "Adara Sales",
   },
@@ -91,7 +82,6 @@ const DEMO_STATUS_HISTORY: LeadStatusHistoryEntry[] = [
     id: "d3",
     statusLabel: "SITE VISIT DONE",
     tone: "orange",
-    durationDays: 1,
     modifiedLabel: "17 Mar 2026",
     modifiedBy: "Adara Sales",
   },
@@ -99,7 +89,6 @@ const DEMO_STATUS_HISTORY: LeadStatusHistoryEntry[] = [
     id: "d4",
     statusLabel: "SITE VISIT PLANNED",
     tone: "green",
-    durationDays: 0,
     modifiedLabel: "17 Mar 2026",
     modifiedBy: "Adara Sales",
   },
@@ -107,7 +96,6 @@ const DEMO_STATUS_HISTORY: LeadStatusHistoryEntry[] = [
     id: "d5",
     statusLabel: "OPEN",
     tone: "green",
-    durationDays: 0,
     modifiedLabel: "17 Mar 2026",
     modifiedBy: "System",
   },

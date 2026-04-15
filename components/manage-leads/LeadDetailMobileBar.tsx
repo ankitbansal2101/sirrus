@@ -10,7 +10,13 @@ function assignedLabel(lead: LeadRow) {
 }
 
 /** Compact strip when the left rail is hidden (mobile). */
-export function LeadDetailMobileBar({ lead }: { lead: LeadRow }) {
+export function LeadDetailMobileBar({
+  lead,
+  onEditLead,
+}: {
+  lead: LeadRow;
+  onEditLead?: () => void;
+}) {
   const createLabel = formatIsoDateDisplay(lead.createDate);
   const updateLabel = formatLudDisplay(lead.lud);
 
@@ -18,6 +24,7 @@ export function LeadDetailMobileBar({ lead }: { lead: LeadRow }) {
     <div className="shrink-0 border-b border-slate-200/80 bg-white px-3 py-2.5 md:hidden">
       <button
         type="button"
+        onClick={() => onEditLead?.()}
         className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#34369C] bg-white py-2.5 font-outfit text-sm font-medium text-[#34369C] shadow-sm transition-colors hover:bg-[#f8f9ff]"
       >
         <Image src="/assets/images/editBluePencilIcon.svg" alt="" width={18} height={18} />

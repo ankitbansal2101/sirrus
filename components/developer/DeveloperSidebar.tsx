@@ -20,7 +20,7 @@ const items: { href: string; src: string; alt: string; active?: boolean }[] = [
     src: "/assets/images/channelPartnerIcon.svg",
     alt: "channel partner",
   },
-  { href: "#", src: "/assets/images/SettingsIcon.svg", alt: "settings" },
+  { href: "/developer/widgets-config", src: "/assets/images/SettingsIcon.svg", alt: "widgets configuration" },
   {
     href: "#",
     src: "/assets/images/receptionistSidebarIcon.svg",
