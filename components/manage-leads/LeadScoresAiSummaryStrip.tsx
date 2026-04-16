@@ -54,10 +54,12 @@ type PairTitle = (typeof SCORE_CARDS)[number]["title"];
 
 type Props = {
   insight: LeadAiSummaryStripInsight | null;
+  /** `full` = Activity tab; `scores` / `summary` = canvas widget slices. */
+  sections?: "full" | "scores" | "summary";
 };
 
 /** Four PAIR score cards (expandable) plus AI Generated Summary — matches product markup. */
-export function LeadScoresAiSummaryStrip({ insight }: Props) {
+export function LeadScoresAiSummaryStrip({ insight, sections = "full" }: Props) {
   const hasInsight = insight !== null;
   const summaryBody = hasInsight
     ? insight.summaryBody
@@ -72,25 +74,38 @@ export function LeadScoresAiSummaryStrip({ insight }: Props) {
   }, []);
 
   const expandedConfig = expanded ? SCORE_CARDS.find((c) => c.title === expanded) : undefined;
+  const showScores = sections !== "summary";
+  const showSummary = sections !== "scores";
+  const hasExpandedScore = expanded !== null;
 
   return (
-    <div className="shrink-0">
-      <div className="flex gap-1">
-        <div className="grid w-full grid-cols-2 gap-1.5 sm:gap-2.5 lg:grid-cols-4">
+    <div className="w-full min-w-0 shrink-0">
+      {showScores ? (
+        <div className="flex w-full min-w-0 flex-wrap gap-1 sm:gap-1.5">
           {SCORE_CARDS.map((card) => {
             const isOpen = expanded === card.title;
+            const isDimmed = hasExpandedScore && !isOpen;
             return (
               <div
                 key={card.title}
                 role="button"
                 tabIndex={0}
                 aria-expanded={isOpen}
+                aria-current={isOpen ? "true" : undefined}
+                aria-controls={isOpen ? `pair-rationale-${card.title}` : undefined}
                 aria-label={`${card.title}, score NA out of 5. ${isOpen ? "Collapse" : "Expand"} rationale.`}
-                className="flex min-w-0 cursor-pointer items-center rounded-xl px-3 py-2.5 outline-none ring-[#34369C] focus-visible:ring-2 sm:rounded-2xl sm:px-3.5 sm:py-3"
+                className={`flex min-w-0 max-w-full flex-[1_1_min(100%,9.5rem)] cursor-pointer items-stretch rounded-lg px-2 py-1.5 outline-none transition-[box-shadow,opacity,ring] duration-200 ring-[#34369C] focus-visible:ring-2 sm:rounded-xl sm:px-2.5 sm:py-2 ${
+                  isOpen
+                    ? "z-[1] shadow-[0_4px_14px_-4px_rgba(52,54,156,0.35)] ring-2 ring-[#34369C] ring-offset-2 ring-offset-white"
+                    : isDimmed
+                      ? "opacity-55"
+                      : ""
+                }`}
                 style={{
                   backgroundColor: card.bg,
                   borderColor: card.border,
-                  borderWidth: 0,
+                  borderStyle: "solid",
+                  borderWidth: isOpen ? 2 : 0,
                 }}
                 onClick={() => toggleCard(card.title)}
                 onKeyDown={(e) => {
@@ -100,21 +115,21 @@ export function LeadScoresAiSummaryStrip({ insight }: Props) {
                   }
                 }}
               >
-                <div className="flex w-full flex-col gap-1">
-                  <div className="flex w-full items-center justify-between">
-                    <div className="flex min-w-0">
-                      <div className="mt-1 text-base font-semibold" style={{ color: ink }}>
+                <div className="flex w-full min-w-0 flex-col gap-0.5">
+                  <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-x-1 gap-y-0.5">
+                    <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0 sm:gap-x-2">
+                      <div className="text-xs font-semibold sm:text-sm" style={{ color: ink }}>
                         {card.title}
                       </div>
-                      <div className="ml-4 mt-[2px] text-lg font-semibold" style={{ color: ink }}>
+                      <div className="shrink-0 text-sm font-semibold sm:text-base" style={{ color: ink }}>
                         NA
-                        <span className="ml-1 text-xs font-medium" style={{ color: ink }}>
+                        <span className="ml-0.5 text-[10px] font-medium sm:text-xs" style={{ color: ink }}>
                           /5
                         </span>
                       </div>
                     </div>
                     <IoChevronDown
-                      className={`h-[1em] w-[1em] shrink-0 transition-transform duration-200 ${
+                      className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 sm:h-4 sm:w-4 ${
                         isOpen ? "rotate-180" : ""
                       }`}
                       style={{ color: ink }}
@@ -126,23 +141,46 @@ export function LeadScoresAiSummaryStrip({ insight }: Props) {
             );
           })}
         </div>
-      </div>
+      ) : null}
 
-      {expandedConfig ? (
+      {showScores && expandedConfig ? (
         <div
-          className="mt-2 flex w-full flex-col rounded-2xl p-2.5 sm:mt-3 sm:p-3"
+          id={`pair-rationale-${expandedConfig.title}`}
+          role="region"
+          aria-label={`${expandedConfig.title} rationale`}
+          className="mt-1.5 flex w-full flex-col rounded-xl p-2 sm:mt-2 sm:rounded-2xl sm:p-2.5"
           style={{
             backgroundColor: expandedConfig.detailBg,
             borderColor: expandedConfig.detailBorder,
-            borderWidth: 1,
+            borderWidth: 2,
             borderStyle: "solid",
+            boxShadow: `inset 3px 0 0 0 ${expandedConfig.detailBorder}`,
           }}
         >
+          <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-black/[0.06] pb-2">
+            <span
+              className="inline-flex items-center rounded-md border px-2 py-0.5 font-outfit text-[10px] font-bold uppercase tracking-wide sm:text-[11px]"
+              style={{
+                backgroundColor: expandedConfig.bg,
+                borderColor: expandedConfig.border,
+                color: ink,
+              }}
+            >
+              {expandedConfig.title}
+            </span>
+            <span className="font-outfit text-[10px] font-semibold text-[#5c5878] sm:text-[11px]">
+              NA<span className="font-medium text-[#8b87a8]">/5</span>
+              <span className="mx-1.5 text-[#c4c0d4]" aria-hidden>
+                ·
+              </span>
+              <span className="font-normal text-[#34369C]">Rationale</span>
+            </span>
+          </div>
           <div>
             <div className="flex">
-              <FaCircle className="mr-2 mt-2 shrink-0" size={5} style={{ color: ink }} aria-hidden />
-              <span className="w-full font-outfit text-sm font-normal" style={{ color: labelBlue }}>
-                <span className="font-outfit text-sm font-normal" style={{ color: ink }}>
+              <FaCircle className="mr-2 mt-2 shrink-0" size={5} style={{ color: expandedConfig.border }} aria-hidden />
+              <span className="w-full font-outfit text-xs font-normal sm:text-[13px]" style={{ color: labelBlue }}>
+                <span className="font-outfit text-xs font-normal leading-snug sm:text-[13px]" style={{ color: ink }}>
                   {expandedConfig.detailText}
                 </span>
               </span>
@@ -151,60 +189,69 @@ export function LeadScoresAiSummaryStrip({ insight }: Props) {
         </div>
       ) : null}
 
+      {showSummary ? (
       <div
-        className="mt-2 w-full rounded-[1.25rem] border-[0.0875rem] border-transparent bg-origin-border p-3 sm:mt-3 sm:rounded-[1.75rem] sm:p-4 [background-clip:padding-box,border-box]"
+        className={`w-full rounded-xl border-[0.0875rem] border-transparent bg-origin-border p-2.5 sm:rounded-2xl sm:p-3 [background-clip:padding-box,border-box] ${
+          showScores ? "mt-1.5 sm:mt-2" : "mt-0"
+        }`}
         style={{
           backgroundImage:
             "linear-gradient(rgba(255, 255, 255, 0.898), rgba(255, 255, 255, 0.898)), linear-gradient(109.4deg, rgb(10, 216, 234) -9.52%, rgb(98, 48, 201) 55.34%, rgb(230, 128, 178) 125.99%)",
         }}
       >
-        <div className="flex flex-row">
+        <div className="flex min-w-0 flex-row flex-wrap items-center gap-1.5">
           <Image
             src="/assets/images/aiSummaryIcon.svg"
             alt="ai generated summary"
-            width={32}
-            height={32}
-            className="mb-1 mr-1"
+            width={24}
+            height={24}
+            className="h-6 w-6 shrink-0"
           />
           <Image
             src="/assets/images/aiGeneratedSummary.svg"
             alt="ai generated summary"
             width={150}
             height={32}
-            className="ml-2 h-8 w-44"
+            className="ml-0 h-6 min-w-0 w-auto max-w-full object-contain object-left sm:max-w-[11rem]"
           />
         </div>
-        <div className="my-2 h-[0.8px] w-full" style={{ backgroundColor: "rgb(98, 92, 135)" }} />
+        <div className="my-1.5 h-px w-full sm:my-2" style={{ backgroundColor: "rgb(98, 92, 135)" }} />
 
-        <div className="mt-1 flex">
-          <FaCircle className="mr-2 mt-2 shrink-0" style={{ color: hasInsight ? bodyDark : bodyMuted }} size={5} />
-          <span className="w-full font-outfit text-sm font-normal" style={{ color: labelBlue }}>
-            <span className="font-outfit text-sm font-normal" style={{ color: hasInsight ? bodyDark : bodyMuted }}>
-              {summaryBody}
-            </span>
-          </span>
-        </div>
-
-        {nextSteps ? (
-          <div className="mt-1 flex">
-            <FaCircle className="mr-2 shrink-0" style={{ color: labelBlue, marginTop: 8 }} size={5} />
-            <span className="w-full font-outfit text-sm font-normal" style={{ color: labelBlue }}>
-              Next Steps :{" "}
-              <span className="font-outfit text-sm font-normal" style={{ color: bodyDark }}>
-                {nextSteps}
+        <div className="max-h-[min(22vh,9.5rem)] overflow-y-auto pr-0.5 [scrollbar-width:thin] sm:max-h-[min(26vh,11rem)] lg:max-h-[min(28vh,12rem)]">
+          <div className="flex">
+            <FaCircle className="mr-1.5 mt-1.5 shrink-0" style={{ color: hasInsight ? bodyDark : bodyMuted }} size={5} />
+            <span className="w-full font-outfit text-xs font-normal sm:text-[13px]" style={{ color: labelBlue }}>
+              <span
+                className="font-outfit text-xs font-normal leading-snug sm:text-[13px] sm:leading-snug"
+                style={{ color: hasInsight ? bodyDark : bodyMuted }}
+              >
+                {summaryBody}
               </span>
             </span>
           </div>
-        ) : null}
+
+          {nextSteps ? (
+            <div className="mt-1.5 flex sm:mt-2">
+              <FaCircle className="mr-1.5 mt-1.5 shrink-0" style={{ color: labelBlue }} size={5} />
+              <span className="w-full font-outfit text-xs font-normal sm:text-[13px]" style={{ color: labelBlue }}>
+                Next Steps :{" "}
+                <span className="font-outfit text-xs font-normal sm:text-[13px]" style={{ color: bodyDark }}>
+                  {nextSteps}
+                </span>
+              </span>
+            </div>
+          ) : null}
+        </div>
 
         {lastUpdated ? (
-          <div className="mt-2 flex w-full justify-end">
-            <span className="mt-2 text-right font-outfit text-xs font-medium" style={{ color: "rgb(126, 122, 149)" }}>
+          <div className="mt-1.5 flex w-full justify-end sm:mt-2">
+            <span className="text-right font-outfit text-[10px] font-medium sm:text-xs" style={{ color: "rgb(126, 122, 149)" }}>
               Last Updated on: {lastUpdated}
             </span>
           </div>
         ) : null}
       </div>
+      ) : null}
     </div>
   );
 }

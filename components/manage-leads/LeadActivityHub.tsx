@@ -15,7 +15,7 @@ import { LeadScoresAiSummaryStrip } from "./LeadScoresAiSummaryStrip";
 import { LeadStatusHistoryCard } from "./LeadStatusHistoryCard";
 
 const card =
-  "rounded-2xl border border-slate-200/50 bg-white p-4 shadow-[0_2px_16px_-6px_rgba(31,23,80,0.07)]";
+  "rounded-2xl border border-slate-200/50 bg-white p-3 shadow-[0_2px_16px_-6px_rgba(31,23,80,0.07)] sm:p-3.5";
 /** Scroll region inside a flex column card (grid row). */
 const scrollFill = "min-h-0 flex-1 overflow-y-auto pr-0.5 [scrollbar-width:thin]";
 
@@ -24,16 +24,16 @@ function statusPillStyle(status: LeadTaskStatus): { bg: string; color: string } 
   return { bg: "rgb(232, 245, 233)", color: "rgb(46, 125, 50)" };
 }
 
-const columnCard = `${card} flex min-h-[180px] min-w-0 flex-col lg:h-full lg:min-h-0`;
+const columnCard = `${card} flex min-h-[160px] min-w-0 flex-col lg:h-full lg:min-h-0`;
 
 type RemarkSortOrder = "recent-first" | "recent-last";
 
-const REMARK_SOURCES: LeadRemarkSource[] = ["Call feedback form", "Add Comment", "Change Stage"];
+const REMARK_SOURCES: LeadRemarkSource[] = ["Call feedback form", "Comment", "Change Stage"];
 
 function defaultRemarkSourceFilter(): Record<LeadRemarkSource, boolean> {
   return {
     "Call feedback form": true,
-    "Add Comment": true,
+    Comment: true,
     "Change Stage": true,
   };
 }
@@ -58,13 +58,13 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-2.5 sm:gap-3">
       <LeadScoresAiSummaryStrip insight={getAiSummaryStripInsightForLead(lead)} />
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 sm:gap-4 lg:grid-rows-1 lg:grid-cols-[min(15.5rem,34vw)_minmax(0,1fr)_minmax(0,1fr)] lg:items-stretch lg:gap-4 [&>*]:min-h-0 [&>*]:min-w-0 lg:[&>*]:h-full">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-2.5 sm:gap-3 lg:grid-rows-1 lg:grid-cols-[clamp(18.5rem,30vw,26rem)_minmax(0,1fr)_minmax(0,1fr)] lg:items-stretch lg:gap-3 [&>*]:min-h-0 [&>*]:min-w-0 lg:[&>*]:h-full">
         <LeadStatusHistoryCard lead={lead} embeddedInGrid />
 
         <section className={columnCard}>
-          <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+          <div className="mb-1.5 flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-1.5">
             <h3 className="font-outfit text-xs font-semibold tracking-tight text-[#1F1750] sm:text-sm">
               Remarks <span className="font-normal text-[#8b87a8]">({sortedRemarks.length})</span>
             </h3>
@@ -81,7 +81,7 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
             </label>
           </div>
           {remarks.length > 0 ? (
-            <div className="mb-2 rounded-lg border border-slate-100 bg-gradient-to-br from-slate-50/80 to-white px-2 py-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)]">
+            <div className="mb-1.5 rounded-lg border border-slate-100 bg-gradient-to-br from-slate-50/80 to-white px-2 py-1 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)]">
               <div className="flex flex-wrap items-center gap-1.5">
                 <MdFilterList className="h-3.5 w-3.5 shrink-0 text-[#34369C]/45" aria-hidden />
                 <span className="sr-only">Filter remarks by source</span>
@@ -115,7 +115,7 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
             id={`note-${lead.id}`}
             rows={1}
             placeholder="Add a note…"
-            className="mb-2 min-h-[2.25rem] w-full shrink-0 resize-y rounded-lg border border-slate-200/90 bg-slate-50/50 px-2.5 py-1.5 font-outfit text-xs leading-snug text-[#1F1750] placeholder:text-[#a8a4b8] transition-all focus:border-[#34369C]/40 focus:bg-white focus:shadow-[0_0_0_2px_rgba(52,54,156,0.08)] focus:outline-none sm:text-[13px]"
+            className="mb-1.5 min-h-[2rem] w-full shrink-0 resize-y rounded-lg border border-slate-200/90 bg-slate-50/50 px-2 py-1 font-outfit text-xs leading-snug text-[#1F1750] placeholder:text-[#a8a4b8] transition-all focus:border-[#34369C]/40 focus:bg-white focus:shadow-[0_0_0_2px_rgba(52,54,156,0.08)] focus:outline-none sm:text-[13px]"
           />
           <div className={scrollFill}>
             {remarks.length === 0 ? (
@@ -127,21 +127,21 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
                 No remarks match these filters.
               </p>
             ) : (
-              <ul className="space-y-1.5">
+              <ul className="space-y-1">
                 {sortedRemarks.map((r) => (
                   <li
                     key={r.id}
-                    className="flex gap-2 rounded-lg border border-slate-100/90 bg-white px-2.5 py-2 shadow-[0_1px_2px_rgba(31,23,80,0.04)] transition-all hover:border-slate-200 hover:shadow-[0_3px_10px_-5px_rgba(31,23,80,0.08)]"
+                    className="flex gap-1.5 rounded-lg border border-slate-100/90 bg-white px-2 py-1.5 shadow-[0_1px_2px_rgba(31,23,80,0.04)] transition-all hover:border-slate-200 hover:shadow-[0_3px_10px_-5px_rgba(31,23,80,0.08)]"
                   >
                     <Image
                       src="/assets/images/userPlaceholder.svg"
                       alt=""
-                      width={26}
-                      height={26}
-                      className="h-[26px] w-[26px] shrink-0 rounded-full object-cover ring-1 ring-slate-100"
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 shrink-0 rounded-full object-cover ring-1 ring-slate-100"
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="font-outfit text-[13px] leading-snug text-[#1F1750] sm:text-sm sm:leading-snug">
+                      <p className="font-outfit text-[12px] leading-snug text-[#1F1750] sm:text-[13px] sm:leading-snug">
                         {r.text}
                       </p>
                       <div className="mt-1 flex flex-wrap items-center justify-between gap-x-1.5 gap-y-0.5">
@@ -161,7 +161,7 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
         </section>
 
         <section className={columnCard}>
-          <h3 className="mb-2 shrink-0 border-b border-slate-100 pb-2 font-outfit text-xs font-semibold tracking-tight text-[#1F1750] sm:text-sm">
+          <h3 className="mb-1.5 shrink-0 border-b border-slate-100 pb-1.5 font-outfit text-xs font-semibold tracking-tight text-[#1F1750] sm:text-sm">
             Open tasks <span className="font-normal text-[#8b87a8]">({tasks.length})</span>
           </h3>
           <div className={scrollFill}>
@@ -170,16 +170,16 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
                 No records found
               </p>
             ) : (
-              <ul className="space-y-1.5">
+              <ul className="space-y-1">
                 {tasks.map((t) => {
                   const st = statusPillStyle(t.status);
                   return (
                     <li
                       key={t.id}
-                      className="rounded-lg border border-slate-100/90 bg-white px-2.5 py-2 shadow-[0_1px_2px_rgba(31,23,80,0.04)] transition-all hover:border-slate-200 hover:shadow-[0_3px_10px_-5px_rgba(31,23,80,0.08)]"
+                      className="rounded-lg border border-slate-100/90 bg-white px-2 py-1.5 shadow-[0_1px_2px_rgba(31,23,80,0.04)] transition-all hover:border-slate-200 hover:shadow-[0_3px_10px_-5px_rgba(31,23,80,0.08)]"
                     >
-                      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-                        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-1 font-outfit text-sm">
+                      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-0.5 font-outfit text-[13px] sm:text-sm">
                           <span className="font-semibold text-[#1F1750]">{t.taskType}</span>
                           <span className="text-[#8b87a8]">
                             <span className="font-semibold text-[#5c5878]">Due</span> · {t.dueLabel}

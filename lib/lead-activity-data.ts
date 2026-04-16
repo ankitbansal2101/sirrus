@@ -1,6 +1,6 @@
 import type { LeadRow } from "@/lib/leads-sample-data";
 
-export type LeadRemarkSource = "Call feedback form" | "Add Comment" | "Change Stage";
+export type LeadRemarkSource = "Call feedback form" | "Comment" | "Change Stage";
 
 export type LeadRemark = {
   id: string;
@@ -39,7 +39,7 @@ const KAWAL_REMARKS: LeadRemark[] = [
     author: "Vishakh G",
     text: "CNC — customer not contactable.",
     timeLabel: "30 Mar 2026, 3:46 PM",
-    source: "Add Comment",
+    source: "Comment",
     sortAt: Date.parse("2026-03-30T15:46:00"),
   },
   {
@@ -55,7 +55,7 @@ const KAWAL_REMARKS: LeadRemark[] = [
     author: "Prasun Adara",
     text: "Shared unit options for Tower 1.",
     timeLabel: "09 Apr 2026, 11:04 AM",
-    source: "Add Comment",
+    source: "Comment",
     sortAt: Date.parse("2026-04-09T11:04:00"),
   },
   {
@@ -71,7 +71,7 @@ const KAWAL_REMARKS: LeadRemark[] = [
     author: "Vishakh G",
     text: "Lead prefers weekend visit.",
     timeLabel: "29 Mar 2026, 6:30 PM",
-    source: "Add Comment",
+    source: "Comment",
     sortAt: Date.parse("2026-03-29T18:30:00"),
   },
 ];
@@ -103,7 +103,7 @@ const DEMO_REMARKS: LeadRemark[] = [
     author: "System",
     text: "Lead created from portal.",
     timeLabel: "Today, 10:12 AM",
-    source: "Add Comment",
+    source: "Comment",
     sortAt: Date.parse("2026-04-12T10:12:00"),
   },
 ];

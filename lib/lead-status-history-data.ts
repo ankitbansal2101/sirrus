@@ -7,7 +7,12 @@ export type LeadStatusHistoryEntry = {
   /** Short label shown in pill, e.g. "NEGOTIATION" */
   statusLabel: string;
   tone: StatusHistoryTone;
+  /**
+   * Shown in the timeline date lane. Use `"<date>, <time>"` (comma + space) when time is known
+   * so the UI can stack date and time vertically.
+   */
   modifiedLabel: string;
+  /** Person or system that applied the stage change. */
   modifiedBy: string;
 };
 
@@ -68,28 +73,28 @@ const DEMO_STATUS_HISTORY: LeadStatusHistoryEntry[] = [
     id: "d1",
     statusLabel: "NEGOTIATION",
     tone: "orange",
-    modifiedLabel: "10 Apr 2026",
+    modifiedLabel: "10 Apr 2026, 4:18 PM",
     modifiedBy: "Prasun Adara",
   },
   {
     id: "d2",
     statusLabel: "SITE REVISIT DONE",
     tone: "blue",
-    modifiedLabel: "18 Mar 2026",
+    modifiedLabel: "18 Mar 2026, 11:05 AM",
     modifiedBy: "Adara Sales",
   },
   {
     id: "d3",
     statusLabel: "SITE VISIT DONE",
     tone: "orange",
-    modifiedLabel: "17 Mar 2026",
+    modifiedLabel: "17 Mar 2026, 2:40 PM",
     modifiedBy: "Adara Sales",
   },
   {
     id: "d4",
     statusLabel: "SITE VISIT PLANNED",
     tone: "green",
-    modifiedLabel: "17 Mar 2026",
+    modifiedLabel: "17 Mar 2026, 9:00 AM",
     modifiedBy: "Adara Sales",
   },
   {

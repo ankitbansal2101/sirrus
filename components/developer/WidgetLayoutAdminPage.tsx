@@ -1,15 +1,15 @@
 "use client";
 
-import { type DragEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { BsGripVertical } from "react-icons/bs";
-import { FiChevronDown, FiChevronUp, FiEye, FiEyeOff, FiLock } from "react-icons/fi";
-import { MdSave } from "react-icons/md";
+import { useCallback, useState } from "react";
+import { FiChevronDown, FiChevronUp, FiLock } from "react-icons/fi";
 import {
+  LEFT_RAIL_FIELD_CONFIG_CHANGED_EVENT,
+  LEFT_RAIL_FIELD_STORAGE_KEY,
   defaultLeftRailFieldConfig,
-  loadLeftRailFieldConfig,
-  saveLeftRailFieldConfig,
+  getOrderedVisibleIds,
 } from "@/lib/left-rail-field-config";
-import { LEFT_RAIL_FIELD_DEFINITIONS, type LeftRailFieldId } from "@/lib/left-rail-field-registry";
+import { type LeftRailFieldId } from "@/lib/left-rail-field-registry";
+import { LeadRailFieldConfiguratorPanel } from "@/components/developer/LeadRailFieldConfiguratorPanel";
 import { SAMPLE_LEADS, type LeadRow } from "@/lib/leads-sample-data";
 import { LeadDetailPagePreview } from "./LeadDetailPagePreview";
 
@@ -60,14 +60,6 @@ const WIDGET_CATALOG: readonly WidgetCatalogEntry[] = [
   },
 ];
 
-function moveIndex<T>(arr: T[], from: number, to: number): T[] {
-  if (from === to || from < 0 || to < 0 || from >= arr.length || to >= arr.length) return arr;
-  const next = [...arr];
-  const [item] = next.splice(from, 1);
-  next.splice(to, 0, item);
-  return next;
-}
-
 function pickPreviewLead(): LeadRow {
   const row = SAMPLE_LEADS.find((l) => l.id === "4" || l.leadId === "L0226000001");
   return row ? { ...row } : { ...SAMPLE_LEADS[0] };
@@ -76,71 +68,13 @@ function pickPreviewLead(): LeadRow {
 export function WidgetLayoutAdminPage() {
   /** Which catalog row has its settings panel open (`null` = none). */
   const [openWidgetId, setOpenWidgetId] = useState<string | null>(null);
-  const [orderedIds, setOrderedIds] = useState<LeftRailFieldId[]>(() => defaultLeftRailFieldConfig().orderedIds);
-  const [hiddenIds, setHiddenIds] = useState<LeftRailFieldId[]>(() => defaultLeftRailFieldConfig().hiddenIds);
-  const [hydrated, setHydrated] = useState(false);
+  const [orderedVisibleIds, setOrderedVisibleIds] = useState<LeftRailFieldId[]>(() =>
+    getOrderedVisibleIds(defaultLeftRailFieldConfig()),
+  );
   const [previewLead, setPreviewLead] = useState<LeadRow>(pickPreviewLead);
 
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      const cfg = loadLeftRailFieldConfig();
-      setOrderedIds(cfg.orderedIds);
-      setHiddenIds(cfg.hiddenIds);
-      setHydrated(true);
-    });
-    return () => cancelAnimationFrame(id);
-  }, []);
-
-  const hiddenSet = useMemo(() => new Set(hiddenIds), [hiddenIds]);
-
-  const orderedVisibleIds = useMemo(
-    () => orderedIds.filter((id) => !hiddenSet.has(id)),
-    [orderedIds, hiddenSet],
-  );
-
-  const labelById = useMemo(() => {
-    const m = new Map<LeftRailFieldId, string>();
-    for (const d of LEFT_RAIL_FIELD_DEFINITIONS) m.set(d.id, d.label);
-    return m;
-  }, []);
-
-  const toggleFieldVisibility = useCallback((id: LeftRailFieldId) => {
-    setHiddenIds((prev) => {
-      const s = new Set(prev);
-      if (s.has(id)) s.delete(id);
-      else s.add(id);
-      return [...s];
-    });
-  }, []);
-
-  const onDragOverRow = useCallback((e: DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  }, []);
-
-  const onDropOnRow = useCallback((dropIndex: number) => {
-    return (e: DragEvent) => {
-      e.preventDefault();
-      const from = Number(e.dataTransfer.getData("text/plain"));
-      if (Number.isNaN(from) || from === dropIndex) return;
-      setOrderedIds((prev) => moveIndex(prev, from, dropIndex));
-    };
-  }, []);
-
-  const saveFields = useCallback(() => {
-    const d = defaultLeftRailFieldConfig();
-    const next: { orderedIds: LeftRailFieldId[]; hiddenIds: LeftRailFieldId[] } =
-      orderedIds.length > 0 ? { orderedIds, hiddenIds } : { orderedIds: d.orderedIds, hiddenIds: d.hiddenIds };
-    saveLeftRailFieldConfig(next);
-    setOrderedIds(next.orderedIds);
-    setHiddenIds(next.hiddenIds);
-  }, [orderedIds, hiddenIds]);
-
-  const resetFields = useCallback(() => {
-    const d = defaultLeftRailFieldConfig();
-    setOrderedIds(d.orderedIds);
-    setHiddenIds(d.hiddenIds);
-    saveLeftRailFieldConfig(d);
+  const onLeftRailVisibleIds = useCallback((ids: LeftRailFieldId[]) => {
+    setOrderedVisibleIds(ids);
   }, []);
 
   const onPreviewLeadPatch = useCallback((patch: Partial<LeadRow>) => {
@@ -158,7 +92,7 @@ export function WidgetLayoutAdminPage() {
       </h1>
 
       {/* Config first on mobile; side-by-side on lg — tops align with widgets card */}
-      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(220px,17rem)_minmax(0,1fr)] lg:gap-6 xl:grid-cols-[minmax(232px,18rem)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(10.5rem,13.5rem)_minmax(0,1fr)] lg:gap-5 xl:grid-cols-[minmax(11rem,14rem)_minmax(0,1fr)]">
         <div className="order-1 flex min-h-0 flex-col gap-3 lg:sticky lg:top-2 lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:pr-1 [scrollbar-width:thin]">
           <div className="rounded-xl border border-[#34369C]/20 bg-gradient-to-br from-[#f4f5ff] to-white p-2.5 shadow-sm">
             <h2 className="font-outfit text-xs font-semibold uppercase tracking-wide text-[#6b6578]">
@@ -178,17 +112,19 @@ export function WidgetLayoutAdminPage() {
                     <li
                       key={w.id}
                       title={w.description}
-                      className="flex min-h-[1.75rem] items-center justify-between gap-1.5 rounded border border-slate-200/90 bg-[#f8f9fc] px-2 py-0.5 shadow-[0_1px_0_rgba(15,23,42,0.04)]"
+                      className="flex min-h-[1.75rem] items-center justify-start rounded border border-slate-200/90 bg-[#f8f9fc] px-2 py-0.5 shadow-[0_1px_0_rgba(15,23,42,0.04)]"
                     >
-                      <span className="min-w-0 truncate font-outfit text-[11px] font-semibold leading-tight text-[#1F1750]">
-                        {w.title}
-                      </span>
-                      <span className="sr-only">{w.description}</span>
-                      <span
-                        className="inline-flex shrink-0 items-center text-[#9ca3af]"
-                        aria-label={`${w.title}, locked`}
-                      >
-                        <FiLock size={11} strokeWidth={2.25} aria-hidden />
+                      <span className="inline-flex min-w-0 max-w-full items-center gap-1.5">
+                        <span className="min-w-0 truncate font-outfit text-[11px] font-semibold leading-tight text-[#1F1750]">
+                          {w.title}
+                        </span>
+                        <span className="sr-only">{w.description}</span>
+                        <span
+                          className="inline-flex shrink-0 items-center text-[#9ca3af]"
+                          aria-label={`${w.title}, locked`}
+                        >
+                          <FiLock size={11} strokeWidth={2.25} aria-hidden />
+                        </span>
                       </span>
                     </li>
                   );
@@ -207,20 +143,22 @@ export function WidgetLayoutAdminPage() {
                       aria-expanded={isOpen}
                       aria-controls={`widget-panel-${w.id}`}
                       onClick={() => setOpenWidgetId((cur) => (cur === w.id ? null : w.id))}
-                      className="flex w-full min-h-[1.75rem] items-center justify-between gap-2 px-2 py-0.5 text-left transition-colors hover:bg-white/80"
+                      className="flex w-full min-h-[1.75rem] items-center justify-start px-2 py-0.5 text-left transition-colors hover:bg-white/80"
                     >
-                      <span className="min-w-0 flex-1 truncate font-outfit text-[11px] font-semibold leading-tight text-[#1F1750]">
-                        {w.title}
-                      </span>
-                      <span className="inline-flex shrink-0 items-center gap-1">
-                        <span className="font-outfit text-[9px] font-semibold uppercase tracking-wide text-[#34369C]">
-                          Configure
+                      <span className="inline-flex min-w-0 max-w-full items-center gap-1.5">
+                        <span className="min-w-0 truncate font-outfit text-[11px] font-semibold leading-tight text-[#1F1750]">
+                          {w.title}
                         </span>
-                        {isOpen ? (
-                          <FiChevronUp size={14} className="text-[#34369C]" aria-hidden />
-                        ) : (
-                          <FiChevronDown size={14} className="text-[#34369C]" aria-hidden />
-                        )}
+                        <span className="inline-flex shrink-0 items-center gap-0.5 text-[#34369C]">
+                          <span className="font-outfit text-[9px] font-semibold uppercase tracking-wide">
+                            Configure
+                          </span>
+                          {isOpen ? (
+                            <FiChevronUp size={13} className="shrink-0" aria-hidden />
+                          ) : (
+                            <FiChevronDown size={13} className="shrink-0" aria-hidden />
+                          )}
+                        </span>
                       </span>
                     </button>
 
@@ -231,92 +169,12 @@ export function WidgetLayoutAdminPage() {
                         aria-labelledby={rowTitleId}
                         className="border-t border-slate-200/80 bg-white px-2 pb-2 pt-2"
                       >
-                        <p className="font-outfit text-[10px] leading-snug text-[#8b87a8]">
-                          Left rail summary fields (Lead details). Drag to reorder; eye toggles visibility. Live preview →
-                        </p>
-
-                        {!hydrated ? (
-                          <p className="mt-2 font-outfit text-xs text-[#8b87a8]">Loading…</p>
-                        ) : (
-                          <>
-                            <ul
-                              className="mt-2 max-h-[min(40vh,360px)] space-y-px overflow-y-auto rounded-md border border-slate-100 bg-slate-50/80 py-0.5 [scrollbar-width:thin]"
-                              role="list"
-                            >
-                              {orderedIds.map((id, index) => {
-                                const hidden = hiddenSet.has(id);
-                                return (
-                                  <li
-                                    key={id}
-                                    onDragOver={onDragOverRow}
-                                    onDrop={onDropOnRow(index)}
-                                    className="flex min-h-[1.625rem] items-center gap-1 px-1"
-                                  >
-                                    <button
-                                      type="button"
-                                      draggable
-                                      aria-label={`Reorder ${labelById.get(id) ?? id}`}
-                                      className="-ml-0.5 inline-flex shrink-0 cursor-grab touch-none rounded border-0 bg-transparent p-0.5 text-[#b4b8c4] active:cursor-grabbing"
-                                      onDragStart={(e) => {
-                                        e.dataTransfer.effectAllowed = "move";
-                                        e.dataTransfer.setData("text/plain", String(index));
-                                      }}
-                                    >
-                                      <BsGripVertical size={14} aria-hidden />
-                                    </button>
-                                    <span
-                                      className={`min-w-0 flex-1 truncate font-outfit text-[11px] leading-tight ${
-                                        hidden ? "font-normal text-[#b0aec4]" : "font-semibold text-[#1F1750]"
-                                      }`}
-                                    >
-                                      {labelById.get(id) ?? id}
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => toggleFieldVisibility(id)}
-                                      className={`inline-flex shrink-0 rounded p-0.5 transition-colors ${
-                                        hidden
-                                          ? "text-[#b0aec4] hover:bg-slate-200/60 hover:text-[#8b87a8]"
-                                          : "text-[#34369C] hover:bg-[#34369C]/10"
-                                      }`}
-                                      aria-label={
-                                        hidden ? `Show ${labelById.get(id) ?? id}` : `Hide ${labelById.get(id) ?? id}`
-                                      }
-                                      title={hidden ? "Show in left rail" : "Hide from left rail"}
-                                    >
-                                      {hidden ? (
-                                        <FiEyeOff size={15} strokeWidth={2} aria-hidden />
-                                      ) : (
-                                        <FiEye size={15} strokeWidth={2} aria-hidden />
-                                      )}
-                                    </button>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-
-                            <div className="mt-2.5 flex flex-wrap gap-1.5">
-                              <button
-                                type="button"
-                                onClick={saveFields}
-                                className="inline-flex items-center gap-1 rounded-lg bg-[#34369C] px-2 py-1.5 font-outfit text-[11px] font-semibold text-white shadow-sm transition-opacity hover:opacity-95"
-                              >
-                                <MdSave size={14} aria-hidden />
-                                Save layout
-                              </button>
-                              <button
-                                type="button"
-                                onClick={resetFields}
-                                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-outfit text-[11px] font-semibold text-[#5c5878] hover:bg-slate-50"
-                              >
-                                Reset
-                              </button>
-                            </div>
-                            <p className="mt-1.5 font-outfit text-[9px] leading-snug text-[#a8a4b8]">
-                              <code className="rounded bg-slate-100 px-0.5">localStorage</code> in this browser.
-                            </p>
-                          </>
-                        )}
+                        <LeadRailFieldConfiguratorPanel
+                          storageKey={LEFT_RAIL_FIELD_STORAGE_KEY}
+                          changeEvent={LEFT_RAIL_FIELD_CONFIG_CHANGED_EVENT}
+                          intro="Applies to manage-leads and this V1 preview. Drag to reorder; eye toggles visibility. Live preview →"
+                          onVisibleIdsChange={onLeftRailVisibleIds}
+                        />
                       </div>
                     ) : null}
                   </li>

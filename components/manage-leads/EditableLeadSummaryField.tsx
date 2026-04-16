@@ -9,6 +9,10 @@ export type EditableFieldKind = "text" | "email" | "tel" | "select";
 
 type Variant = "rail" | "stacked";
 
+/** Left-rail grid column 3: keeps read-only and editable pencil icons aligned. */
+export const RAIL_PENCIL_SLOT =
+  "flex w-7 shrink-0 items-center justify-center self-start pt-0.5 sm:pt-1";
+
 function emptyToDash(s: string) {
   const t = s.trim();
   return t === "" ? "-" : t;
@@ -96,7 +100,7 @@ export function EditableLeadSummaryField({
         e.stopPropagation();
         if (canEdit) startEdit();
       }}
-      className={`flex shrink-0 self-start rounded p-1 ${canEdit ? "cursor-pointer hover:bg-slate-100/80" : "cursor-default opacity-40"}`}
+      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded p-0 ${canEdit ? "cursor-pointer hover:bg-slate-100/80" : "cursor-default opacity-40"}`}
       aria-label={canEdit ? `Edit ${label}` : undefined}
     >
       <Image src="/assets/images/editBluePencilIcon.svg" alt="" width={12} height={12} className="opacity-80" />
@@ -169,9 +173,11 @@ export function EditableLeadSummaryField({
           {editing ? editor : renderDisplay(lead)}
         </div>
         {!editing ? (
-          <span className="flex shrink-0 self-start pt-0.5 sm:pt-1">{pencilBtn}</span>
+          <span className={RAIL_PENCIL_SLOT}>{pencilBtn}</span>
         ) : (
-          <span className="flex w-[28px] shrink-0 self-start pt-0.5 sm:pt-1" aria-hidden />
+          <span className={RAIL_PENCIL_SLOT} aria-hidden>
+            <span className="block h-7 w-7 shrink-0" />
+          </span>
         )}
       </div>
     </div>

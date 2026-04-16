@@ -11,7 +11,7 @@ import {
 import { getLeadOverviewValues } from "@/lib/lead-overview-model";
 import type { LeftRailFieldId } from "@/lib/left-rail-field-registry";
 import type { LeadRow } from "@/lib/leads-sample-data";
-import { EditableLeadSummaryField, emptyToDash } from "./EditableLeadSummaryField";
+import { EditableLeadSummaryField, emptyToDash, RAIL_PENCIL_SLOT } from "./EditableLeadSummaryField";
 
 function assignedLabel(lead: { assignedDisplayName?: string; assignedTitle?: string; assigned: string }) {
   return lead.assignedDisplayName ?? lead.assignedTitle ?? lead.assigned;
@@ -33,8 +33,10 @@ function FieldRowReadOnly({ label, children }: { label: string; children: ReactN
         <div className="min-w-0 flex-1 font-outfit text-[13px] leading-relaxed font-medium text-[#1F1750] sm:min-w-0">
           {children}
         </div>
-        <span className="flex w-7 shrink-0 self-start pt-0.5 sm:pt-1" aria-hidden>
-          <Image src="/assets/images/editBluePencilIcon.svg" alt="" width={12} height={12} className="opacity-25" />
+        <span className={RAIL_PENCIL_SLOT} aria-hidden>
+          <span className="flex h-7 w-7 items-center justify-center">
+            <Image src="/assets/images/editBluePencilIcon.svg" alt="" width={12} height={12} className="opacity-25" />
+          </span>
         </span>
       </div>
     </div>

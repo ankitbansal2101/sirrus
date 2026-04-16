@@ -53,10 +53,16 @@ export function LeadDetailPagePreview({
 
   return (
     <div
-      className={`flex h-full min-h-[220px] w-full flex-col overflow-hidden md:flex-row ${rootChrome}`}
+      className={`flex h-full min-h-0 w-full flex-col overflow-hidden md:min-h-[220px] md:flex-row ${rootChrome}`}
       aria-label="Lead detail layout preview"
     >
-      <aside className="hidden h-full min-h-0 w-[300px] shrink-0 flex-col shadow-[6px_0_40px_-12px_rgba(31,23,80,0.14)] md:flex lg:w-[352px]">
+      <aside
+        className={
+          builderCanvas
+            ? "flex h-full min-h-0 w-full min-w-0 max-w-[min(100%,360px)] shrink-0 flex-col overflow-y-auto border-b border-slate-200/60 shadow-[6px_0_40px_-12px_rgba(31,23,80,0.14)] max-md:max-h-[min(50dvh,420px)] sm:max-w-[380px] md:w-[300px] md:max-w-none md:max-h-none md:overflow-hidden md:border-b-0 lg:w-[352px]"
+            : "hidden h-full min-h-0 w-[300px] shrink-0 flex-col overflow-hidden shadow-[6px_0_40px_-12px_rgba(31,23,80,0.14)] md:flex lg:w-[352px]"
+        }
+      >
         <LeadDetailLeftRail
           lead={lead}
           summaryFieldIds={leftRailFieldIds}
@@ -65,8 +71,8 @@ export function LeadDetailPagePreview({
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col border-[#d5d9e6] bg-[#eef1f8] md:border-l">
-        <div className="flex shrink-0 flex-col gap-2 border-b border-slate-200/70 bg-white px-4 py-3 md:px-5 md:py-4">
-          <div className="flex items-start gap-3">
+        <div className="flex shrink-0 flex-col gap-1.5 border-b border-slate-200/70 bg-white px-4 py-2 md:px-5 md:py-2.5">
+          <div className="flex items-start gap-2">
             <div className="min-w-0 flex-1">
               <LeadDetailProjectStrip projectName={lead.project} />
             </div>
@@ -84,8 +90,8 @@ export function LeadDetailPagePreview({
 
         <LeadDetailMobileBar lead={lead} />
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-3 pt-2 md:px-4 md:pb-4">
-          <div className="w-full shrink-0 overflow-x-auto overflow-y-hidden pb-2 [scrollbar-width:thin]">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-2 pt-1.5 md:px-4 md:pb-3">
+          <div className="w-full shrink-0 overflow-x-auto overflow-y-hidden pb-1.5 [scrollbar-width:thin]">
             <div className="flex min-w-max gap-x-1.5 sm:gap-x-2.5">
               {LEAD_DETAIL_TABS.map((label, i) => {
                 const active = i === detailTab;
@@ -130,7 +136,7 @@ export function LeadDetailPagePreview({
             <div
               className={
                 detailTab === 0
-                  ? "flex min-h-0 flex-1 flex-col py-3 pl-3 pr-3 sm:py-4 sm:pl-5 sm:pr-5"
+                  ? "flex min-h-0 flex-1 flex-col py-2 pl-3 pr-3 sm:py-3 sm:pl-4 sm:pr-4"
                   : detailTab === 2
                     ? "py-6 pl-4 pr-4 sm:pl-6 sm:pr-6"
                     : detailTab === 3

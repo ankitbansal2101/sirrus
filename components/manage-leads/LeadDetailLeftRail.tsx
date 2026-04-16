@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import { useMemo } from "react";
 import { LeadTempBadge } from "@/lib/lead-temp-ring";
-import type { LeftRailFieldId } from "@/lib/left-rail-field-registry";
+import { DEFAULT_LEFT_RAIL_FIELD_ORDER, type LeftRailFieldId } from "@/lib/left-rail-field-registry";
 import type { LeadRow } from "@/lib/leads-sample-data";
 import { stageBg } from "@/lib/leads-sample-data";
 import { LeftRailSummaryFields } from "./LeftRailSummaryFields";
@@ -21,14 +22,19 @@ export function LeadDetailLeftRail({
   summaryFieldIds?: LeftRailFieldId[];
 }) {
   const { orderedVisibleIds: persistedIds } = useLeftRailFieldConfig();
-  const fieldIds = summaryFieldIds ?? persistedIds;
+  /** Live preview passes `summaryFieldIds` explicitly (can be empty). Drawer uses persisted config; if everything is hidden, fall back so the rail is never blank by accident. */
+  const fieldIds = useMemo(() => {
+    if (summaryFieldIds !== undefined) return summaryFieldIds;
+    if (persistedIds.length > 0) return persistedIds;
+    return [...DEFAULT_LEFT_RAIL_FIELD_ORDER];
+  }, [summaryFieldIds, persistedIds]);
 
   return (
     <aside
-      className="flex h-full min-h-0 w-full min-w-0 flex-col bg-gradient-to-b from-[#f8f9fd] via-[#f4f5fa] to-[#eceef6]"
+      className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-gradient-to-b from-[#f8f9fd] via-[#f4f5fa] to-[#eceef6]"
       aria-label="Lead summary"
     >
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pt-4 pb-3 [scrollbar-width:thin]">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pt-4 pb-3">
         <div className="shrink-0 rounded-2xl border border-slate-200/40 bg-white/95 p-4 shadow-[0_2px_16px_-6px_rgba(31,23,80,0.08)] backdrop-blur-sm">
           <div className="flex items-start gap-3">
             <LeadTempBadge temp={lead.temp} size="sm" />
@@ -90,7 +96,7 @@ export function LeadDetailLeftRail({
           </button>
         </div>
 
-        <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200/50 bg-white/85 shadow-[0_2px_14px_-6px_rgba(31,23,80,0.06)] backdrop-blur-sm">
+        <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden rounded-2xl border border-slate-200/50 bg-white/85 shadow-[0_2px_14px_-6px_rgba(31,23,80,0.06)] backdrop-blur-sm [scrollbar-width:thin]">
           <LeftRailSummaryFields lead={lead} fieldIds={fieldIds} onPatchLead={onPatchLead} />
         </div>
       </div>

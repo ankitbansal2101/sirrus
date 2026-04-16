@@ -10,6 +10,11 @@ export const LEFT_RAIL_FIELD_STORAGE_KEY = "sirrus.left-rail-fields.v1";
 
 export const LEFT_RAIL_FIELD_CONFIG_CHANGED_EVENT = "sirrus:left-rail-field-config-changed";
 
+/** Separate from V1 so the widgets canvas V2 + lead-detail preview stay in sync without affecting production manage-leads. */
+export const LEFT_RAIL_FIELD_STORAGE_KEY_V2 = "sirrus.left-rail-fields.v2";
+
+export const LEFT_RAIL_FIELD_CONFIG_CHANGED_EVENT_V2 = "sirrus:left-rail-field-config-changed-v2";
+
 export type LeftRailFieldPersistedConfig = {
   /** Full order of every configurable field id. */
   orderedIds: LeftRailFieldId[];
@@ -34,10 +39,10 @@ export function getOrderedVisibleIds(config: LeftRailFieldPersistedConfig): Left
   return config.orderedIds.filter((id) => !hidden.has(id));
 }
 
-export function loadLeftRailFieldConfig(): LeftRailFieldPersistedConfig {
+export function loadLeftRailFieldConfigFromStorage(storageKey: string): LeftRailFieldPersistedConfig {
   if (typeof window === "undefined") return defaultLeftRailFieldConfig();
   try {
-    const raw = window.localStorage.getItem(LEFT_RAIL_FIELD_STORAGE_KEY);
+    const raw = window.localStorage.getItem(storageKey);
     if (!raw) return defaultLeftRailFieldConfig();
     const parsed = JSON.parse(raw) as {
       orderedIds?: unknown;
@@ -47,7 +52,11 @@ export function loadLeftRailFieldConfig(): LeftRailFieldPersistedConfig {
     if (parsed.orderedIds !== undefined) {
       const orderedIds = normalizeFullFieldOrder(parsed.orderedIds);
       const hiddenIds = normalizeHiddenIds(parsed.hiddenIds, orderedIds);
-      return { orderedIds, hiddenIds };
+      const next = { orderedIds, hiddenIds };
+      if (getOrderedVisibleIds(next).length === 0 && orderedIds.length > 0) {
+        return defaultLeftRailFieldConfig();
+      }
+      return next;
     }
     if (parsed.orderedVisibleIds !== undefined) {
       return migrateFromV1(normalizeLeftRailFieldOrder(parsed.orderedVisibleIds));
@@ -58,8 +67,28 @@ export function loadLeftRailFieldConfig(): LeftRailFieldPersistedConfig {
   }
 }
 
-export function saveLeftRailFieldConfig(config: LeftRailFieldPersistedConfig) {
+export function loadLeftRailFieldConfig(): LeftRailFieldPersistedConfig {
+  return loadLeftRailFieldConfigFromStorage(LEFT_RAIL_FIELD_STORAGE_KEY);
+}
+
+export function loadLeftRailFieldConfigV2(): LeftRailFieldPersistedConfig {
+  return loadLeftRailFieldConfigFromStorage(LEFT_RAIL_FIELD_STORAGE_KEY_V2);
+}
+
+export function saveLeftRailFieldConfigToStorage(
+  storageKey: string,
+  config: LeftRailFieldPersistedConfig,
+  changeEvent: string,
+) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(LEFT_RAIL_FIELD_STORAGE_KEY, JSON.stringify(config));
-  window.dispatchEvent(new CustomEvent(LEFT_RAIL_FIELD_CONFIG_CHANGED_EVENT));
+  window.localStorage.setItem(storageKey, JSON.stringify(config));
+  window.dispatchEvent(new CustomEvent(changeEvent));
+}
+
+export function saveLeftRailFieldConfig(config: LeftRailFieldPersistedConfig) {
+  saveLeftRailFieldConfigToStorage(LEFT_RAIL_FIELD_STORAGE_KEY, config, LEFT_RAIL_FIELD_CONFIG_CHANGED_EVENT);
+}
+
+export function saveLeftRailFieldConfigV2(config: LeftRailFieldPersistedConfig) {
+  saveLeftRailFieldConfigToStorage(LEFT_RAIL_FIELD_STORAGE_KEY_V2, config, LEFT_RAIL_FIELD_CONFIG_CHANGED_EVENT_V2);
 }
