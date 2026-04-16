@@ -24,37 +24,44 @@ export default function DeveloperLeadDetailPage() {
   }, []);
 
   return (
-    <div className="-mx-8 -mb-8 flex min-h-[calc(100dvh-5.75rem)] w-[calc(100%+4rem)] max-w-none flex-col bg-[#e8ebf4]">
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 bg-white/95 px-4 py-2.5 md:px-8">
-        <p className="max-w-3xl font-outfit text-xs leading-snug text-[#5c5878]">
-          Same lead detail shell as manage leads (track 1). Left-rail fields and per-tab widget layouts follow{" "}
-          <Link
-            href="/developer/widgets-config-v2"
-            className="font-semibold text-[#34369C] underline-offset-2 hover:underline"
-          >
-            Widgets configurator V2
-          </Link>
-          .
-        </p>
+    <div className="mx-auto flex w-full max-w-[min(100%,1920px)] flex-col gap-3 pb-6 pt-1">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-outfit text-lg font-semibold tracking-tight text-[#1F1750]">Lead detail preview (V2)</h1>
+          <p className="mt-1 max-w-2xl font-outfit text-xs leading-snug text-[#8b87a8]">
+            Full-page preview using the left-rail field list from{" "}
+            <Link href="/developer/widgets-config-v2" className="font-semibold text-[#34369C] underline-offset-2 hover:underline">
+              Widgets configurator V2
+            </Link>
+            . Manage-leads continues to use the V1 widget configurator storage until you wire production to V2.
+          </p>
+        </div>
         <Link
           href="/developer/widgets-config-v2"
-          className="inline-flex shrink-0 items-center rounded-lg border border-[#34369C]/30 bg-white px-3 py-1.5 font-outfit text-xs font-semibold text-[#34369C] shadow-sm hover:bg-[#f4f5ff]"
+          className="inline-flex shrink-0 items-center rounded-lg border border-[#34369C]/30 bg-white px-3 py-2 font-outfit text-xs font-semibold text-[#34369C] shadow-sm hover:bg-[#f4f5ff]"
         >
-          Edit layout
+          Edit in V2 canvas
         </Link>
       </div>
 
-      <div className="flex min-h-[min(640px,calc(100dvh-7.5rem))] flex-1 flex-col p-2 md:p-4">
-        <LeadDetailPagePreview
-          layoutVariant="fullPage"
-          showPreviewBadge={false}
-          syncV2Configurator
-          lead={lead}
-          leftRailFieldIds={orderedVisibleIds}
-          onLeadPatch={onLeadPatch}
-          onStageChange={onStageChange}
-        />
-      </div>
+      <section
+        className="flex min-h-0 w-full min-w-0 flex-1 flex-col lg:min-h-[min(78vh,920px)]"
+        aria-label="Lead detail preview"
+      >
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-500/30 bg-[#c9cfdb] p-2 shadow-[inset_0_2px_10px_rgba(255,255,255,0.28)] md:p-3">
+          <div className="flex h-[min(72vh,860px)] min-h-[min(520px,70vh)] w-full flex-1 flex-col overflow-hidden rounded-xl border-2 border-white bg-white shadow-[0_14px_44px_-12px_rgba(31,23,80,0.28)] ring-1 ring-[#34369C]/15 lg:h-[min(78vh,920px)] lg:max-h-[calc(100dvh-6rem)]">
+            <div className="flex min-h-0 flex-1 flex-col">
+              <LeadDetailPagePreview
+                builderCanvas
+                lead={lead}
+                leftRailFieldIds={orderedVisibleIds}
+                onLeadPatch={onLeadPatch}
+                onStageChange={onStageChange}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

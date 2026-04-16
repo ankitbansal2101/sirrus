@@ -52,15 +52,6 @@ export function WidgetLayoutV2Page() {
   const leftRailFieldIdsForCanvas = canvasLeftRailIds ?? v2PersistedRailIds;
   /** Lead Details row in palette: expand for left-rail config (same idea as V1 widgets list). */
   const [openPaletteId, setOpenPaletteId] = useState<string | null>(null);
-  const [saveAck, setSaveAck] = useState(false);
-  const saveAckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(
-    () => () => {
-      if (saveAckTimer.current) clearTimeout(saveAckTimer.current);
-    },
-    [],
-  );
 
   const onV2LeftRailVisible = useCallback((ids: LeftRailFieldId[]) => {
     setCanvasLeftRailIds(ids);
@@ -172,22 +163,6 @@ export function WidgetLayoutV2Page() {
     setSelectedId(null);
   }, [applyDoc]);
 
-  const removeWidget = useCallback(
-    (widgetId: string) => {
-      applyDoc((d) => {
-        const tid = d.activeTabId;
-        return {
-          ...d,
-          tabs: d.tabs.map((t) =>
-            t.id !== tid ? t : { ...t, widgets: t.widgets.filter((q) => q.id !== widgetId) },
-          ),
-        };
-      });
-      setSelectedId((cur) => (cur === widgetId ? null : cur));
-    },
-    [applyDoc],
-  );
-
   const removeTab = useCallback(
     (tabId: string) => {
       if (!tabId.startsWith("custom-")) return;
@@ -245,35 +220,16 @@ export function WidgetLayoutV2Page() {
             href="/developer/lead-detail"
             className="rounded-md px-2 py-1 font-outfit text-[10px] font-semibold text-[#34369C] hover:bg-[#34369C]/10"
           >
-            Lead detail
+            Preview
           </Link>
-          <div className="flex flex-wrap items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => {
-                if (!doc) return;
-                saveWidgetCanvasV2Document(doc);
-                if (saveAckTimer.current) clearTimeout(saveAckTimer.current);
-                setSaveAck(true);
-                saveAckTimer.current = setTimeout(() => {
-                  setSaveAck(false);
-                  saveAckTimer.current = null;
-                }, 2600);
-              }}
-              className="inline-flex items-center gap-1 rounded-lg bg-[#34369C] px-2.5 py-1.5 font-outfit text-[11px] font-semibold text-white shadow-sm hover:opacity-95"
-            >
-              <MdSave size={15} aria-hidden />
-              Save
-            </button>
-            {saveAck ? (
-              <span
-                role="status"
-                className="inline-flex items-center rounded-lg border border-emerald-200/90 bg-emerald-50 px-2 py-1 font-outfit text-[11px] font-semibold text-emerald-800"
-              >
-                Saved — preview updated
-              </span>
-            ) : null}
-          </div>
+          <button
+            type="button"
+            onClick={() => doc && saveWidgetCanvasV2Document(doc)}
+            className="inline-flex items-center gap-1 rounded-lg bg-[#34369C] px-2.5 py-1.5 font-outfit text-[11px] font-semibold text-white shadow-sm hover:opacity-95"
+          >
+            <MdSave size={15} aria-hidden />
+            Save
+          </button>
           <button
             type="button"
             onClick={clearCanvas}
@@ -506,7 +462,6 @@ export function WidgetLayoutV2Page() {
                   setSelectedId(w.id);
                   bringToFront(w.id);
                 }}
-                onDelete={() => removeWidget(w.id)}
                 onChange={(patch) => {
                   applyDoc((d) => {
                     const tid = d.activeTabId;
@@ -536,7 +491,6 @@ function CanvasWidget({
   selected,
   canvasRef,
   onSelect,
-  onDelete,
   onChange,
 }: {
   widget: PlacedCanvasWidget;
@@ -545,7 +499,6 @@ function CanvasWidget({
   selected: boolean;
   canvasRef: React.RefObject<HTMLDivElement | null>;
   onSelect: () => void;
-  onDelete: () => void;
   onChange: (patch: Partial<PlacedCanvasWidget>) => void;
 }) {
   const widgetRef = useRef(widget);
@@ -697,29 +650,12 @@ function CanvasWidget({
         onSelect();
       }}
     >
-      <div className="relative z-30 flex shrink-0 touch-none items-center gap-1 rounded-t-[10px] border-b border-slate-200/80 bg-gradient-to-r from-[#f4f5ff] to-white px-1.5 py-0.5">
-        <div
-          onPointerDown={startMove}
-          className="flex min-w-0 flex-1 cursor-grab items-center gap-1 py-0.5 active:cursor-grabbing"
-        >
-          <span className="min-w-0 truncate font-outfit text-[10px] font-semibold text-[#1F1750]">{widget.title}</span>
-          <span className="shrink-0 font-outfit text-[9px] font-medium text-[#8b87a8]">{widget.kind}</span>
-        </div>
-        {selected ? (
-          <button
-            type="button"
-            aria-label={`Remove ${widget.title}`}
-            title="Remove widget"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-            className="inline-flex shrink-0 rounded-md border border-red-200/90 bg-white p-1 text-red-600 shadow-sm hover:bg-red-50"
-          >
-            <MdDeleteOutline size={14} aria-hidden />
-          </button>
-        ) : null}
+      <div
+        onPointerDown={startMove}
+        className="relative z-30 flex shrink-0 cursor-grab touch-none items-center justify-between gap-1 rounded-t-[10px] border-b border-slate-200/80 bg-gradient-to-r from-[#f4f5ff] to-white px-2 py-1 active:cursor-grabbing"
+      >
+        <span className="min-w-0 truncate font-outfit text-[10px] font-semibold text-[#1F1750]">{widget.title}</span>
+        <span className="shrink-0 font-outfit text-[9px] font-medium text-[#8b87a8]">{widget.kind}</span>
       </div>
       <div className="relative z-0 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <WidgetV2CanvasBlockBody kind={widget.kind} lead={lead} leftRailFieldIds={leftRailFieldIds} />

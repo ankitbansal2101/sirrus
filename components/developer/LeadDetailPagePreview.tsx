@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import { useCallback, useState } from "react";
-import { LeadDetailV2TabCanvas } from "@/components/developer/LeadDetailV2TabCanvas";
-import { useWidgetCanvasV2Document } from "@/components/developer/useWidgetCanvasV2Document";
+import { LEAD_DETAIL_TABS } from "@/lib/lead-detail-tabs";
+import type { LeftRailFieldId } from "@/lib/left-rail-field-registry";
+import type { LeadRow } from "@/lib/leads-sample-data";
 import { LeadActivityHub } from "@/components/manage-leads/LeadActivityHub";
 import { LeadDetailLeftRail } from "@/components/manage-leads/LeadDetailLeftRail";
 import { LeadDetailMobileBar } from "@/components/manage-leads/LeadDetailMobileBar";
@@ -11,10 +12,6 @@ import { LeadDetailProjectStrip } from "@/components/manage-leads/LeadDetailProj
 import { LeadJourneyPanel } from "@/components/manage-leads/LeadJourneyPanel";
 import { LeadOverviewPanel } from "@/components/manage-leads/LeadOverviewPanel";
 import { LeadStageChangeForm } from "@/components/manage-leads/LeadStageChangeForm";
-import { LEAD_DETAIL_TABS } from "@/lib/lead-detail-tabs";
-import type { LeftRailFieldId } from "@/lib/left-rail-field-registry";
-import type { LeadRow } from "@/lib/leads-sample-data";
-import { widgetsForLeadDetailTabIndex } from "@/lib/widget-canvas-v2-storage";
 
 function fundingForDrawer(lead: LeadRow) {
   if (lead.drawerFundingSource) return lead.drawerFundingSource;
@@ -28,12 +25,6 @@ type Props = {
   onStageChange: (stage: string) => void;
   /** When true, outer chrome is flat so the preview reads as one widget on a builder canvas (admin only). */
   builderCanvas?: boolean;
-  /** Match `/developer/manage-leads` drawer: full-bleed rail + main (no card chrome). */
-  layoutVariant?: "embedded" | "fullPage";
-  /** “Preview” pill in the header (developer-only). */
-  showPreviewBadge?: boolean;
-  /** Tab bodies use widgets from Widgets V2 configurator when that tab has placed widgets. */
-  syncV2Configurator?: boolean;
 };
 
 /**
@@ -46,17 +37,8 @@ export function LeadDetailPagePreview({
   onLeadPatch,
   onStageChange,
   builderCanvas = false,
-  layoutVariant = "embedded",
-  showPreviewBadge = true,
-  syncV2Configurator = false,
 }: Props) {
   const [detailTab, setDetailTab] = useState(0);
-  const v2Doc = useWidgetCanvasV2Document(syncV2Configurator);
-  const v2SlotWidgets =
-    syncV2Configurator && v2Doc ? widgetsForLeadDetailTabIndex(v2Doc, detailTab) : [];
-  const showV2TabCanvas = syncV2Configurator && v2SlotWidgets.length > 0;
-  /** V2 canvas owns this tab’s layout; fixed rail would duplicate or ignore “removed” lead-details on canvas. */
-  const hideFixedLeftRail = showV2TabCanvas;
 
   const patchStage = useCallback(
     (stage: string) => {
@@ -65,25 +47,20 @@ export function LeadDetailPagePreview({
     [onStageChange],
   );
 
-  const rootChrome =
-    layoutVariant === "fullPage"
-      ? "rounded-none border-0 bg-[#e8ebf4] shadow-none"
-      : builderCanvas
-        ? "rounded-lg border border-slate-200/90 bg-white shadow-none"
-        : "rounded-2xl border border-slate-300/60 bg-[#e8ebf4] shadow-[0_12px_40px_-12px_rgba(31,23,80,0.18)]";
+  const rootChrome = builderCanvas
+    ? "rounded-lg border border-slate-200/90 bg-white shadow-none"
+    : "rounded-2xl border border-slate-300/60 bg-[#e8ebf4] shadow-[0_12px_40px_-12px_rgba(31,23,80,0.18)]";
 
   return (
     <div
-      className={`flex h-full min-h-0 w-full flex-col overflow-hidden md:min-h-[220px] md:flex-row ${rootChrome} ${layoutVariant === "fullPage" ? "min-h-0 flex-1" : ""}`}
+      className={`flex h-full min-h-0 w-full flex-col overflow-hidden md:min-h-[220px] md:flex-row ${rootChrome}`}
       aria-label="Lead detail layout preview"
     >
       <aside
         className={
-          hideFixedLeftRail
-            ? "hidden"
-            : builderCanvas
-              ? "flex h-full min-h-0 w-full min-w-0 max-w-[min(100%,360px)] shrink-0 flex-col overflow-y-auto border-b border-slate-200/60 shadow-[6px_0_40px_-12px_rgba(31,23,80,0.14)] max-md:max-h-[min(50dvh,420px)] sm:max-w-[380px] md:w-[300px] md:max-w-none md:max-h-none md:overflow-hidden md:border-b-0 lg:w-[352px]"
-              : "hidden h-full min-h-0 w-[300px] shrink-0 flex-col overflow-hidden shadow-[6px_0_40px_-12px_rgba(31,23,80,0.14)] md:flex lg:w-[352px]"
+          builderCanvas
+            ? "flex h-full min-h-0 w-full min-w-0 max-w-[min(100%,360px)] shrink-0 flex-col overflow-y-auto border-b border-slate-200/60 shadow-[6px_0_40px_-12px_rgba(31,23,80,0.14)] max-md:max-h-[min(50dvh,420px)] sm:max-w-[380px] md:w-[300px] md:max-w-none md:max-h-none md:overflow-hidden md:border-b-0 lg:w-[352px]"
+            : "hidden h-full min-h-0 w-[300px] shrink-0 flex-col overflow-hidden shadow-[6px_0_40px_-12px_rgba(31,23,80,0.14)] md:flex lg:w-[352px]"
         }
       >
         <LeadDetailLeftRail
@@ -93,19 +70,15 @@ export function LeadDetailPagePreview({
         />
       </aside>
 
-      <div
-        className={`flex min-h-0 min-w-0 flex-1 flex-col border-[#d5d9e6] bg-[#eef1f8] ${hideFixedLeftRail ? "" : "md:border-l"}`}
-      >
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col border-[#d5d9e6] bg-[#eef1f8] md:border-l">
         <div className="flex shrink-0 flex-col gap-1.5 border-b border-slate-200/70 bg-white px-4 py-2 md:px-5 md:py-2.5">
           <div className="flex items-start gap-2">
             <div className="min-w-0 flex-1">
               <LeadDetailProjectStrip projectName={lead.project} />
             </div>
-            {showPreviewBadge ? (
-              <span className="mt-1 shrink-0 rounded-full border border-dashed border-slate-200 px-2 py-1 font-outfit text-[10px] font-semibold uppercase tracking-wide text-[#8b87a8]">
-                Preview
-              </span>
-            ) : null}
+            <span className="mt-1 shrink-0 rounded-full border border-dashed border-slate-200 px-2 py-1 font-outfit text-[10px] font-semibold uppercase tracking-wide text-[#8b87a8]">
+              Preview
+            </span>
           </div>
           <div className="min-w-0 md:hidden">
             <span className="truncate font-outfit text-sm font-semibold text-[#1F1750]">{lead.name}</span>
@@ -155,14 +128,14 @@ export function LeadDetailPagePreview({
 
           <div
             className={`min-h-0 flex-1 rounded-2xl border border-slate-200/70 bg-white shadow-[0_4px_24px_-8px_rgba(31,23,80,0.08)] [scrollbar-width:thin] ${
-              detailTab === 0 || showV2TabCanvas
+              detailTab === 0
                 ? "flex min-h-0 flex-col overflow-y-auto overscroll-contain"
                 : "overflow-y-auto"
             }`}
           >
             <div
               className={
-                showV2TabCanvas || detailTab === 0
+                detailTab === 0
                   ? "flex min-h-0 flex-1 flex-col py-2 pl-3 pr-3 sm:py-3 sm:pl-4 sm:pr-4"
                   : detailTab === 2
                     ? "py-6 pl-4 pr-4 sm:pl-6 sm:pr-6"
@@ -171,14 +144,7 @@ export function LeadDetailPagePreview({
                       : "py-5 pl-4 pr-4 sm:pl-6 sm:pr-6"
               }
             >
-              {showV2TabCanvas ? (
-                <LeadDetailV2TabCanvas
-                  widgets={v2SlotWidgets}
-                  lead={lead}
-                  leftRailFieldIds={leftRailFieldIds}
-                  className="min-h-[min(52vh,560px)] flex-1"
-                />
-              ) : detailTab === 0 ? (
+              {detailTab === 0 ? (
                 <LeadActivityHub lead={lead} />
               ) : detailTab === 1 ? (
                 <>

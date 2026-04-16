@@ -3,9 +3,6 @@ import type { PlacedCanvasWidget, WidgetCanvasTabState, WidgetCanvasV2Document }
 
 export const WIDGET_CANVAS_V2_STORAGE_KEY = "sirrus.widget-canvas-v2.v1";
 
-/** Fired after `saveWidgetCanvasV2Document` (same tab). Subscribe for live lead-detail / preview sync. */
-export const WIDGET_CANVAS_V2_DOCUMENT_CHANGED = "sirrus:widget-canvas-v2-document-changed";
-
 function presetTabId(label: string, index: number): string {
   const slug = label
     .toLowerCase()
@@ -102,16 +99,6 @@ export function saveWidgetCanvasV2Document(doc: WidgetCanvasV2Document) {
   if (typeof window === "undefined") return;
   const normalized = normalizeDocument(doc);
   window.localStorage.setItem(WIDGET_CANVAS_V2_STORAGE_KEY, JSON.stringify(normalized));
-  window.dispatchEvent(new CustomEvent(WIDGET_CANVAS_V2_DOCUMENT_CHANGED));
-}
-
-/** Widgets placed on the V2 canvas for the lead-detail tab that matches `LEAD_DETAIL_TABS[tabIndex]`. */
-export function widgetsForLeadDetailTabIndex(doc: WidgetCanvasV2Document, tabIndex: number): PlacedCanvasWidget[] {
-  if (tabIndex < 0 || tabIndex >= LEAD_DETAIL_TABS.length) return [];
-  const label = LEAD_DETAIL_TABS[tabIndex];
-  const byLabel = doc.tabs.find((t) => t.label === label);
-  if (byLabel) return byLabel.widgets;
-  return doc.tabs[tabIndex]?.widgets ?? [];
 }
 
 /** Legacy: flat widget list (pre multi-tab). Prefer `loadWidgetCanvasV2Document`. */
