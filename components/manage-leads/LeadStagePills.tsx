@@ -1,6 +1,7 @@
 "use client";
 
 import { LEAD_STAGE_OPTIONS, resolveStageForPills } from "@/lib/lead-stage-options";
+import { STAGE_PILL_BORDER } from "@/lib/lead-stage-colors";
 
 type Props = {
   currentStage: string;
@@ -32,7 +33,7 @@ export function LeadStagePills({
         </h3>
       ) : null}
       <ul
-        className={`m-0 flex list-none flex-wrap content-start overflow-x-auto p-0 pb-0.5 [scrollbar-width:thin] ${compact ? "gap-2 justify-start lg:justify-end" : "gap-2.5"}`}
+        className={`m-0 flex list-none flex-wrap content-start gap-3 overflow-x-auto p-0 pb-0.5 [scrollbar-width:thin] ${compact ? "justify-start lg:justify-end" : ""}`}
       >
         {LEAD_STAGE_OPTIONS.map((opt) => {
           const selected = active === opt.id;
@@ -41,12 +42,12 @@ export function LeadStagePills({
               <button
                 type="button"
                 onClick={() => onSelect(opt.id)}
-                className={`flex shrink-0 items-center rounded-full border font-outfit font-medium whitespace-nowrap transition-all hover:border-[#34369C]/35 hover:bg-[#f8f9ff] ${
-                  compact ? "gap-2 px-3.5 py-2 text-sm" : "gap-2.5 px-4 py-2.5 text-[15px] leading-tight"
+                className={`flex shrink-0 cursor-pointer items-center rounded-full border-[1.5px] font-outfit font-medium whitespace-nowrap transition-all hover:border-[#34369C]/35 hover:bg-[#f8f9ff] ${
+                  compact ? "gap-2 px-4 py-2 text-sm" : "px-5 py-2 text-sm"
                 }`}
                 style={{
                   backgroundColor: selected ? "rgb(240, 241, 255)" : "rgb(255, 255, 255)",
-                  borderColor: selected ? "rgb(52, 54, 156)" : "rgb(226, 228, 236)",
+                  borderColor: selected ? "rgb(52, 54, 156)" : STAGE_PILL_BORDER,
                   color: "rgb(31, 23, 80)",
                   boxShadow: selected ? "0 1px 2px rgba(52, 54, 156, 0.12), 0 0 0 1px rgb(52, 54, 156)" : "0 1px 2px rgba(31, 23, 80, 0.04)",
                 }}
@@ -54,7 +55,7 @@ export function LeadStagePills({
                 aria-label={`Set stage to ${opt.id}`}
               >
                 <span
-                  className={`shrink-0 rounded-full ${compact ? "h-2.5 w-2.5" : "h-3 w-3"}`}
+                  className={`mr-2 shrink-0 rounded-full ${compact ? "h-3 w-3" : "h-4 w-4"}`}
                   style={{ backgroundColor: opt.dotColor }}
                   aria-hidden
                 />

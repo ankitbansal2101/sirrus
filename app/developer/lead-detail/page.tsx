@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useCallback, useState } from "react";
 import { LeadDetailPagePreview } from "@/components/developer/LeadDetailPagePreview";
 import { useLeftRailFieldConfigV2 } from "@/components/manage-leads/useLeftRailFieldConfig";
+import { isKawalReferenceLead } from "@/lib/lead-detail-fixtures";
 import { SAMPLE_LEADS, type LeadRow } from "@/lib/leads-sample-data";
 
 function pickPreviewLead(): LeadRow {
-  const row = SAMPLE_LEADS.find((l) => l.id === "4" || l.leadId === "L0226000001");
+  const row = SAMPLE_LEADS.find((l) => isKawalReferenceLead(l));
   return row ? { ...row } : { ...SAMPLE_LEADS[0] };
 }
 

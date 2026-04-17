@@ -2,9 +2,11 @@
 
 import {
   getStatusHistoryForLead,
-  STATUS_HISTORY_PILL_STYLES,
+  resolveSiteVisitTimelinePills,
+  SITE_VISIT_SUB_PILL_STYLE,
   type LeadStatusHistoryEntry,
 } from "@/lib/lead-status-history-data";
+import { historyStatusPillFill, STAGE_PILL_BORDER, stageDotColor } from "@/lib/lead-stage-colors";
 import type { LeadRow } from "@/lib/leads-sample-data";
 
 const scrollStandalone = "min-h-[220px] max-h-[min(52vh,420px)] overflow-y-auto pr-0.5 [scrollbar-width:thin]";
@@ -23,13 +25,18 @@ function splitModifiedLabel(modifiedLabel: string): { date: string; time: string
 }
 
 function HistoryRow({ entry, isLast }: { entry: LeadStatusHistoryEntry; isLast: boolean }) {
-  const s = STATUS_HISTORY_PILL_STYLES[entry.tone];
+  const siteVisit = resolveSiteVisitTimelinePills(entry);
+  const primaryFill = siteVisit ? stageDotColor("Site Visit") : historyStatusPillFill(entry.statusLabel);
   const { date, time } = splitModifiedLabel(entry.modifiedLabel);
   const by = entry.modifiedBy?.trim();
   const when = time ? `${date} ${time}` : date;
+  const primaryLabel = siteVisit ? "Site Visit" : entry.statusLabel;
+  const ariaStage = siteVisit
+    ? `Site Visit, ${siteVisit.secondaryLabel}`
+    : entry.statusLabel;
   const ariaLabel = by
-    ? `Stage ${entry.statusLabel}, ${when}, by ${by}`
-    : `Stage ${entry.statusLabel}, ${when}`;
+    ? `Stage ${ariaStage}, ${when}, by ${by}`
+    : `Stage ${ariaStage}, ${when}`;
 
   return (
     <li className="relative flex gap-3 pb-5 last:pb-0 sm:gap-3.5" aria-label={ariaLabel}>
@@ -46,8 +53,33 @@ function HistoryRow({ entry, isLast }: { entry: LeadStatusHistoryEntry; isLast: 
         />
       </div>
 
-      <div className="min-w-0 flex-1">
-        <p className="mb-1.5 font-outfit text-[11px] leading-snug tracking-tight text-[#7a7694] sm:text-xs">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span
+            className={`inline-flex w-fit max-w-full rounded-md border px-2.5 py-1 font-outfit text-[11px] font-bold tracking-wide ${
+              siteVisit ? "normal-case tracking-tight text-[#1F1750]" : "uppercase"
+            }`}
+            style={{
+              backgroundColor: primaryFill,
+              color: "rgb(31, 23, 80)",
+              borderColor: STAGE_PILL_BORDER,
+            }}
+          >
+            {primaryLabel}
+          </span>
+          {siteVisit ? (
+            <span
+              className="inline-flex w-fit max-w-full rounded-md border px-2.5 py-1 font-outfit text-[11px] font-bold tracking-tight normal-case text-[#1F1750]"
+              style={{
+                backgroundColor: SITE_VISIT_SUB_PILL_STYLE[siteVisit.secondaryPill].backgroundColor,
+                borderColor: STAGE_PILL_BORDER,
+              }}
+            >
+              {siteVisit.secondaryLabel}
+            </span>
+          ) : null}
+        </div>
+        <p className="font-outfit text-[11px] leading-snug tracking-tight text-[#7a7694] sm:text-xs">
           <span className="font-semibold text-[#5c5878]">{date}</span>
           {time ? (
             <>
@@ -58,20 +90,12 @@ function HistoryRow({ entry, isLast }: { entry: LeadStatusHistoryEntry; isLast: 
             </>
           ) : null}
         </p>
-        <div className="flex flex-col gap-1.5">
-          <span
-            className="inline-flex w-fit max-w-full rounded-md border px-2.5 py-1 font-outfit text-[11px] font-bold tracking-wide uppercase"
-            style={{ backgroundColor: s.bg, color: s.color, borderColor: s.border }}
-          >
-            {entry.statusLabel}
-          </span>
-          {by ? (
-            <p className="font-outfit text-[11px] leading-snug text-[#8b87a8] sm:text-xs">
-              <span className="font-medium text-[#7a7694]">By </span>
-              <span className="font-semibold text-[#1F1750]">{by}</span>
-            </p>
-          ) : null}
-        </div>
+        {by ? (
+          <p className="font-outfit text-[11px] leading-snug text-[#8b87a8] sm:text-xs">
+            <span className="font-medium text-[#7a7694]">By </span>
+            <span className="font-semibold text-[#1F1750]">{by}</span>
+          </p>
+        ) : null}
       </div>
     </li>
   );

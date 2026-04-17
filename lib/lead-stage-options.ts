@@ -4,15 +4,16 @@ export type LeadStageOption = {
   dotColor: string;
 };
 
+/** Dot hex matches `lib/lead-stage-colors.ts` (CRM reference RGBs). */
 export const LEAD_STAGE_OPTIONS: LeadStageOption[] = [
-  { id: "New Lead", dotColor: "#64b5f6" },
-  { id: "Prospects", dotColor: "#9e9e9e" },
-  { id: "Site Visit", dotColor: "#fdd835" },
-  { id: "Negotiation", dotColor: "#b39ddb" },
-  { id: "Booked", dotColor: "#81c784" },
-  { id: "Dropped", dotColor: "#ffab91" },
-  { id: "Unqualified", dotColor: "#f48fb1" },
-  { id: "Is a CP", dotColor: "#7e57c2" },
+  { id: "New Lead", dotColor: "#d8dfff" },
+  { id: "Prospects", dotColor: "#d8dfff" },
+  { id: "Site Visit", dotColor: "#fdf0ab" },
+  { id: "Negotiation", dotColor: "#f2d2ff" },
+  { id: "Booked", dotColor: "#c2fad5" },
+  { id: "Dropped", dotColor: "#ffb4a4" },
+  { id: "Unqualified", dotColor: "#ffb4a4" },
+  { id: "Is a CP", dotColor: "#f2d2ff" },
 ];
 
 const STAGE_ALIASES: Record<string, string> = {

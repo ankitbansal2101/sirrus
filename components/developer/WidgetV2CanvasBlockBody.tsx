@@ -4,18 +4,13 @@ import Image from "next/image";
 import { LeadDetailLeftRail } from "@/components/manage-leads/LeadDetailLeftRail";
 import { LeadScoresAiSummaryStrip } from "@/components/manage-leads/LeadScoresAiSummaryStrip";
 import { LeadStatusHistoryCard } from "@/components/manage-leads/LeadStatusHistoryCard";
-import { getOpenTasksForLead, getRemarksForLead, type LeadTaskStatus } from "@/lib/lead-activity-data";
+import { getRemarksForLead, getTasksForLead } from "@/lib/lead-activity-data";
 import { getAiSummaryStripInsightForLead } from "@/lib/lead-ai-summary-strip-data";
 import type { LeftRailFieldId } from "@/lib/left-rail-field-registry";
 import type { LeadRow } from "@/lib/leads-sample-data";
 
 const card =
   "rounded-xl border border-slate-200/50 bg-white p-2 shadow-[0_2px_12px_-6px_rgba(31,23,80,0.06)] sm:p-2.5";
-
-function statusPillStyle(status: LeadTaskStatus): { bg: string; color: string } {
-  if (status === "Overdue") return { bg: "rgb(255, 236, 236)", color: "rgb(198, 40, 40)" };
-  return { bg: "rgb(232, 245, 233)", color: "rgb(46, 125, 50)" };
-}
 
 /** Live sample UI inside a V2 canvas block — mirrors configurator / lead detail data. */
 export function WidgetV2CanvasBlockBody({
@@ -31,8 +26,10 @@ export function WidgetV2CanvasBlockBody({
   switch (kind) {
     case "lead-details":
       return (
-        <div className="flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden rounded-b-[10px] bg-[#e8ebf4]">
-          <LeadDetailLeftRail lead={lead} summaryFieldIds={leftRailFieldIds} />
+        <div className="relative flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden rounded-b-[10px] bg-[#e8ebf4]">
+          <div className="absolute inset-0 overflow-x-hidden overflow-y-auto overscroll-y-contain [scrollbar-width:thin]">
+            <LeadDetailLeftRail lead={lead} summaryFieldIds={leftRailFieldIds} />
+          </div>
         </div>
       );
 
@@ -57,42 +54,36 @@ export function WidgetV2CanvasBlockBody({
       );
 
     case "open-tasks": {
-      const tasks = getOpenTasksForLead(lead);
+      const tasks = getTasksForLead(lead);
       return (
         <div className={`${card} mx-1 mb-1 mt-0.5 flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col`}>
           <h3 className="mb-1.5 shrink-0 border-b border-slate-100 pb-1 font-outfit text-[11px] font-semibold text-[#1F1750]">
-            Open tasks <span className="font-normal text-[#8b87a8]">({tasks.length})</span>
+            All tasks <span className="font-normal text-[#8b87a8]">({tasks.length})</span>
           </h3>
-          <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 [scrollbar-width:thin]">
+          <div className="min-h-0 min-w-0 flex-1 overflow-y-auto pr-0.5 [scrollbar-width:thin]">
             {tasks.length === 0 ? (
-              <p className="py-6 text-center font-outfit text-xs text-[#8b87a8]">No records found</p>
+              <p className="py-6 text-center font-outfit text-xs text-[#8b87a8]">No tasks yet.</p>
             ) : (
-              <ul className="space-y-1">
-                {tasks.map((t) => {
-                  const st = statusPillStyle(t.status);
-                  return (
-                    <li
-                      key={t.id}
-                      className="rounded-lg border border-slate-100/90 bg-white px-2 py-1.5 shadow-[0_1px_2px_rgba(31,23,80,0.04)]"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-                        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 font-outfit text-[12px] sm:text-[13px]">
-                          <span className="font-semibold text-[#1F1750]">{t.taskType}</span>
-                          <span className="text-[#8b87a8]">
-                            <span className="font-semibold text-[#5c5878]">Due</span> · {t.dueLabel}
-                          </span>
-                        </div>
-                        <span
-                          className="shrink-0 rounded-md px-2 py-0.5 font-outfit text-[10px] font-semibold"
-                          style={{ backgroundColor: st.bg, color: st.color }}
-                        >
-                          {t.status}
-                        </span>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="rounded-lg border border-slate-100/90 bg-white px-1.5 py-0.5 sm:px-2">
+                <table className="w-full min-w-0 table-auto border-collapse text-left font-outfit text-[12px] sm:text-[13px]">
+                  <tbody>
+                    {tasks.map((t, i) => (
+                      <tr
+                        key={t.id}
+                        className={`align-middle ${i > 0 ? "border-t border-slate-100/90" : ""}`}
+                      >
+                        <td className="py-1.5 pr-1.5 font-semibold whitespace-nowrap text-[#1F1750] sm:py-2 sm:pr-2">
+                          {t.taskType}
+                        </td>
+                        <td className="whitespace-nowrap py-1.5 pr-1.5 font-medium tabular-nums text-[#5c5878] sm:py-2 sm:pr-2">
+                          {t.dueLabel}
+                        </td>
+                        <td className="whitespace-nowrap py-1.5 font-medium text-[#5c5878] sm:py-2">{t.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>

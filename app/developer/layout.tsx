@@ -14,24 +14,22 @@ export default function DeveloperLayout({
         color: "rgb(29, 41, 57)",
       }}
     >
-      <div className="h-screen w-full overflow-hidden">
-        <div className="flex flex-col">
-          <DeveloperNav />
+      <div className="flex h-screen w-full flex-col overflow-hidden">
+        <DeveloperNav />
+        <div
+          className="mx-auto flex min-h-0 w-full flex-1"
+          style={{ backgroundColor: "rgba(236, 236, 255, 0.314)" }}
+        >
+          <DeveloperSidebar />
           <div
-            className="mx-auto flex h-full"
-            style={{ backgroundColor: "rgba(236, 236, 255, 0.314)" }}
+            className="custom-scrollbar mx-auto max-w-[1840px] min-h-0 flex-1 overflow-y-auto px-8 pb-8"
+            style={{
+              width: "calc(-5rem + 100vw)",
+              backgroundColor: "rgba(236, 236, 255, 0.314)",
+              maxHeight: "calc(-5.05rem + 100vh)",
+            }}
           >
-            <DeveloperSidebar />
-            <div
-              className="custom-scrollbar mx-auto max-w-[1840px] overflow-y-auto px-8 pb-8"
-              style={{
-                width: "calc(-5rem + 100vw)",
-                backgroundColor: "rgba(236, 236, 255, 0.314)",
-                maxHeight: "calc(-5.05rem + 100vh)",
-              }}
-            >
-              {children}
-            </div>
+            {children}
           </div>
         </div>
       </div>

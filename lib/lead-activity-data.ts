@@ -1,3 +1,8 @@
+import {
+  CONFIGURATOR_V1_PREVIEW_REMARKS,
+  CONFIGURATOR_V1_PREVIEW_TASKS,
+} from "@/lib/configurator-v1-preview-content";
+import { getLeadDetailDataProfile } from "@/lib/lead-detail-fixtures";
 import type { LeadRow } from "@/lib/leads-sample-data";
 
 export type LeadRemarkSource = "Call feedback form" | "Comment" | "Change Stage";
@@ -15,15 +20,19 @@ export type LeadRemark = {
 
 export type LeadTaskType = "Follow Up" | "Site visit";
 
-export type LeadTaskStatus = "Pending" | "Overdue";
+export type LeadTaskStatus = "Pending" | "Overdue" | "Completed";
 
-export type LeadOpenTask = {
+/** One row in the lead “All tasks” list (open + completed). */
+export type LeadTask = {
   id: string;
   taskType: LeadTaskType;
   /** Display due date e.g. "14 Apr 2026" */
   dueLabel: string;
   status: LeadTaskStatus;
 };
+
+/** @deprecated Use `LeadTask`. */
+export type LeadOpenTask = LeadTask;
 
 const KAWAL_REMARKS: LeadRemark[] = [
   {
@@ -76,7 +85,7 @@ const KAWAL_REMARKS: LeadRemark[] = [
   },
 ];
 
-const KAWAL_TASKS: LeadOpenTask[] = [
+const KAWAL_TASKS: LeadTask[] = [
   {
     id: "t1",
     taskType: "Follow Up",
@@ -95,6 +104,12 @@ const KAWAL_TASKS: LeadOpenTask[] = [
     dueLabel: "10 Apr 2026",
     status: "Overdue",
   },
+  {
+    id: "t4",
+    taskType: "Follow Up",
+    dueLabel: "08 Apr 2026",
+    status: "Completed",
+  },
 ];
 
 const DEMO_REMARKS: LeadRemark[] = [
@@ -108,21 +123,37 @@ const DEMO_REMARKS: LeadRemark[] = [
   },
 ];
 
-const DEMO_TASKS: LeadOpenTask[] = [
+const DEMO_TASKS: LeadTask[] = [
   {
     id: "dt1",
     taskType: "Follow Up",
     dueLabel: "15 Apr 2026",
     status: "Pending",
   },
+  {
+    id: "dt2",
+    taskType: "Site visit",
+    dueLabel: "12 Apr 2026",
+    status: "Completed",
+  },
 ];
 
 export function getRemarksForLead(lead: LeadRow): LeadRemark[] {
-  if (lead.id === "4" || lead.leadId === "L0226000001") return KAWAL_REMARKS;
+  const p = getLeadDetailDataProfile(lead);
+  if (p === "kawal") return KAWAL_REMARKS;
+  if (p === "org_admin_preview") return CONFIGURATOR_V1_PREVIEW_REMARKS;
+  if (p === "empty_all" || p === "empty_activity") return [];
   return DEMO_REMARKS;
 }
 
-export function getOpenTasksForLead(lead: LeadRow): LeadOpenTask[] {
-  if (lead.id === "4" || lead.leadId === "L0226000001") return KAWAL_TASKS;
+/** All tasks for the lead (pending, overdue, and completed). */
+export function getTasksForLead(lead: LeadRow): LeadTask[] {
+  const p = getLeadDetailDataProfile(lead);
+  if (p === "kawal") return KAWAL_TASKS;
+  if (p === "org_admin_preview") return CONFIGURATOR_V1_PREVIEW_TASKS;
+  if (p === "empty_all" || p === "empty_activity") return [];
   return DEMO_TASKS;
 }
+
+/** @deprecated Use `getTasksForLead`. */
+export const getOpenTasksForLead = getTasksForLead;

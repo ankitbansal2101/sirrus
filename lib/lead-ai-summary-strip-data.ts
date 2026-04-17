@@ -1,3 +1,5 @@
+import { CONFIGURATOR_V1_PREVIEW_AI_INSIGHT } from "@/lib/configurator-v1-preview-content";
+import { getLeadDetailDataProfile } from "@/lib/lead-detail-fixtures";
 import type { LeadRow } from "@/lib/leads-sample-data";
 
 export type LeadAiSummaryStripInsight = {
@@ -16,6 +18,8 @@ const KAWAL_INSIGHT: LeadAiSummaryStripInsight = {
 };
 
 export function getAiSummaryStripInsightForLead(lead: LeadRow): LeadAiSummaryStripInsight | null {
-  if (lead.id === "4" || lead.leadId === "L0226000001") return KAWAL_INSIGHT;
+  const p = getLeadDetailDataProfile(lead);
+  if (p === "kawal") return KAWAL_INSIGHT;
+  if (p === "org_admin_preview") return CONFIGURATOR_V1_PREVIEW_AI_INSIGHT;
   return null;
 }

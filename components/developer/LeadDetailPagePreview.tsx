@@ -69,28 +69,29 @@ export function LeadDetailPagePreview({
     layoutVariant === "fullPage"
       ? "rounded-none border-0 bg-[#e8ebf4] shadow-none"
       : builderCanvas
-        ? "rounded-lg border border-slate-200/90 bg-white shadow-none"
+        ? "rounded-none border-0 bg-[#e8ebf4] shadow-none"
         : "rounded-2xl border border-slate-300/60 bg-[#e8ebf4] shadow-[0_12px_40px_-12px_rgba(31,23,80,0.18)]";
 
   return (
     <div
-      className={`flex h-full min-h-0 w-full flex-col overflow-hidden md:min-h-[220px] md:flex-row ${rootChrome} ${layoutVariant === "fullPage" ? "min-h-0 flex-1" : ""}`}
+      className={`flex h-full min-h-0 w-full flex-col overflow-hidden md:min-h-[220px] md:flex-row ${rootChrome} ${layoutVariant === "fullPage" || builderCanvas ? "min-h-0 flex-1" : ""}`}
       aria-label="Lead detail layout preview"
     >
       <aside
         className={
           hideFixedLeftRail
             ? "hidden"
-            : builderCanvas
-              ? "flex h-full min-h-0 w-full min-w-0 max-w-[min(100%,360px)] shrink-0 flex-col overflow-y-auto border-b border-slate-200/60 shadow-[6px_0_40px_-12px_rgba(31,23,80,0.14)] max-md:max-h-[min(50dvh,420px)] sm:max-w-[380px] md:w-[300px] md:max-w-none md:max-h-none md:overflow-hidden md:border-b-0 lg:w-[352px]"
-              : "hidden h-full min-h-0 w-[300px] shrink-0 flex-col overflow-hidden shadow-[6px_0_40px_-12px_rgba(31,23,80,0.14)] md:flex lg:w-[352px]"
+            : "relative hidden min-h-0 w-[300px] shrink-0 self-stretch overflow-hidden shadow-[6px_0_40px_-12px_rgba(31,23,80,0.14)] md:block lg:w-[352px]"
         }
       >
-        <LeadDetailLeftRail
-          lead={lead}
-          summaryFieldIds={leftRailFieldIds}
-          onPatchLead={onLeadPatch}
-        />
+        {/* Absolute fill: avoids flex-% height quirks so this region always gets a real scrollport under the developer shell. */}
+        <div className="absolute inset-0 overflow-x-hidden overflow-y-auto overscroll-y-contain [scrollbar-width:thin]">
+          <LeadDetailLeftRail
+            lead={lead}
+            summaryFieldIds={leftRailFieldIds}
+            onPatchLead={onLeadPatch}
+          />
+        </div>
       </aside>
 
       <div

@@ -18,10 +18,11 @@ import {
   saveWidgetCanvasV2Document,
 } from "@/lib/widget-canvas-v2-storage";
 import type { PlacedCanvasWidget, WidgetCanvasV2Document } from "@/lib/widget-canvas-v2-types";
+import { isKawalReferenceLead } from "@/lib/lead-detail-fixtures";
 import { SAMPLE_LEADS, type LeadRow } from "@/lib/leads-sample-data";
 
 function pickCanvasSampleLead(): LeadRow {
-  const row = SAMPLE_LEADS.find((l) => l.id === "4" || l.leadId === "L0226000001");
+  const row = SAMPLE_LEADS.find((l) => isKawalReferenceLead(l));
   return row ? { ...row } : { ...SAMPLE_LEADS[0] };
 }
 
@@ -370,7 +371,6 @@ export function WidgetLayoutV2Page() {
                       <LeadRailFieldConfiguratorPanel
                         storageKey={LEFT_RAIL_FIELD_STORAGE_KEY_V2}
                         changeEvent={LEFT_RAIL_FIELD_CONFIG_CHANGED_EVENT_V2}
-                        intro="V2 only. Reorder / show-hide. Save applies to canvas + preview."
                         onVisibleIdsChange={onV2LeftRailVisible}
                       />
                     </div>

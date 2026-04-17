@@ -1,3 +1,4 @@
+import { isKawalReferenceLead } from "@/lib/lead-detail-fixtures";
 import type { LeadRow } from "@/lib/leads-sample-data";
 
 export type LeadOverviewValues = {
@@ -101,7 +102,7 @@ const KAWAL_OVERVIEW_PATCH: Partial<LeadOverviewValues> = {
 
 export function getLeadOverviewValues(lead: LeadRow): LeadOverviewValues {
   const base = baseFromLead(lead);
-  if (lead.id === "4" || lead.leadId === "L0226000001") {
+  if (isKawalReferenceLead(lead)) {
     return { ...base, ...KAWAL_OVERVIEW_PATCH };
   }
   return base;

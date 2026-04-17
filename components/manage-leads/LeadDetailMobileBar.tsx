@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { FaWhatsapp } from "react-icons/fa";
 import type { LeadRow } from "@/lib/leads-sample-data";
 import { formatIsoDateDisplay, formatLudDisplay } from "@/lib/lead-formatters";
 import { MdAdd, MdKeyboardArrowDown } from "react-icons/md";
@@ -36,34 +37,55 @@ export function LeadDetailMobileBar({
         <p className="truncate font-outfit text-sm font-medium text-[#1F1750]">{lead.project}</p>
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          className="flex h-8 items-center gap-1.5 rounded-lg border border-[#e0e3ee] bg-[#f4f5fc] px-2.5 font-outfit text-xs font-medium text-[#1F1750]"
-        >
-          <span className="relative block h-3.5 w-3.5 shrink-0">
-            <Image src="/assets/images/call.svg" alt="" fill className="object-contain" sizes="14px" />
-          </span>
-          Call
-        </button>
-        <button
-          type="button"
-          className="flex h-8 items-center gap-1.5 rounded-lg border border-[#e0e3ee] bg-[#f4f5fc] px-2.5 font-outfit text-xs font-medium text-[#1F1750]"
-        >
-          <span className="relative block h-3.5 w-3.5 shrink-0">
-            <Image src="/assets/images/whatsApp.svg" alt="" fill className="object-contain" sizes="14px" />
-          </span>
-          Chat
-        </button>
-        <button
-          type="button"
-          className="flex h-8 items-center gap-1.5 rounded-lg border border-[#e0e3ee] bg-[#f4f5fc] px-2.5 font-outfit text-xs font-medium text-[#1F1750]"
-        >
-          <span className="relative block h-3.5 w-3.5 shrink-0">
-            <Image src="/assets/images/fe_comment.svg" alt="" fill className="object-contain" sizes="14px" />
-          </span>
-          Comment
-        </button>
+      <div className="my-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-row flex-wrap items-center gap-4">
+          <button
+            type="button"
+            className="relative flex h-9 w-fit cursor-pointer flex-row items-center overflow-visible rounded-xl border border-solid pt-2 pb-2 pl-2.5 pr-3 font-outfit transition-opacity hover:opacity-95 active:opacity-90"
+            style={{
+              backgroundColor: "rgb(229, 230, 241)",
+              borderColor: "rgb(205, 205, 220)",
+            }}
+          >
+            <span className="relative h-4 w-4 shrink-0">
+              <Image src="/assets/images/call.svg" alt="Call" fill className="object-contain" sizes="16px" />
+            </span>
+            <span className="ml-2 text-[0.75rem]" style={{ color: "rgb(31, 23, 80)" }}>
+              Call
+            </span>
+          </button>
+          <button
+            type="button"
+            aria-label="Chat on WhatsApp"
+            className="relative flex h-9 w-fit cursor-pointer flex-row items-center overflow-visible rounded-xl border border-solid pt-2 pb-2 pl-2.5 pr-3 font-outfit transition-opacity hover:opacity-95 active:opacity-90"
+            style={{
+              backgroundColor: "rgb(229, 230, 241)",
+              borderColor: "rgb(205, 205, 220)",
+            }}
+          >
+            <span className="flex h-4 w-4 shrink-0 items-center justify-center" aria-hidden>
+              <FaWhatsapp size={16} style={{ color: "#25D366" }} />
+            </span>
+            <span className="ml-2 text-[0.75rem]" style={{ color: "rgb(31, 23, 80)" }}>
+              Chat
+            </span>
+          </button>
+          <button
+            type="button"
+            className="relative flex h-9 w-fit cursor-pointer flex-row items-center overflow-visible rounded-xl border border-solid pt-2 pb-2 pl-2.5 pr-3 font-outfit transition-opacity hover:opacity-95 active:opacity-90"
+            style={{
+              backgroundColor: "rgb(229, 230, 241)",
+              borderColor: "rgb(205, 205, 220)",
+            }}
+          >
+            <span className="relative h-4 w-4 shrink-0">
+              <Image src="/assets/images/fe_comment.svg" alt="Add comment" fill className="object-contain" sizes="16px" />
+            </span>
+            <span className="ml-2 text-[0.75rem]" style={{ color: "rgb(31, 23, 80)" }}>
+              Add comment
+            </span>
+          </button>
+        </div>
         <button
           type="button"
           className="ml-auto flex max-w-[9rem] items-center gap-0.5 truncate rounded-full border border-[#e8eaf2] bg-white px-2 py-1 font-outfit text-xs font-medium text-[#1F1750]"

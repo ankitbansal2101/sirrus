@@ -1,3 +1,5 @@
+import { CONFIGURATOR_V1_PREVIEW_JOURNEY } from "@/lib/configurator-v1-preview-content";
+import { getLeadDetailDataProfile } from "@/lib/lead-detail-fixtures";
 import type { JourneyDay } from "@/lib/lead-journey-types";
 import type { LeadRow } from "@/lib/leads-sample-data";
 
@@ -131,7 +133,25 @@ const KAWAL_LEAD_JOURNEY: JourneyDay[] = [
 
 const EMPTY_JOURNEY: JourneyDay[] = [];
 
+/** Short timeline for non-Kawal journey UI tests (fixtures). */
+const FIXTURE_SMALL_JOURNEY: JourneyDay[] = [
+  {
+    dateLabel: "15/04/2026",
+    events: [
+      { type: "note", text: "Fixture: follow-up note logged (sample journey)." },
+      { type: "note", text: "Fixture: stage updated to Prospects (sample)." },
+    ],
+  },
+  {
+    dateLabel: "14/04/2026",
+    events: [{ type: "note", text: "Fixture: new lead created from portal." }],
+  },
+];
+
 export function getJourneyForLead(lead: LeadRow): JourneyDay[] {
-  if (lead.id === "4" || lead.leadId === "L0226000001") return KAWAL_LEAD_JOURNEY;
+  const p = getLeadDetailDataProfile(lead);
+  if (p === "kawal") return KAWAL_LEAD_JOURNEY;
+  if (p === "org_admin_preview") return CONFIGURATOR_V1_PREVIEW_JOURNEY;
+  if (p === "small_journey") return FIXTURE_SMALL_JOURNEY;
   return EMPTY_JOURNEY;
 }

@@ -4,16 +4,17 @@ import Image from "next/image";
 import type { CSSProperties } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { LeadTempBadge } from "@/lib/lead-temp-ring";
+import { STAGE_PILL_BORDER, stageDotColor } from "@/lib/lead-stage-colors";
 import {
   SAMPLE_LEADS,
   STAGE_TAB_COUNTS,
-  stageBg,
   type LeadRow,
 } from "@/lib/leads-sample-data";
 import { AddLeadFormOverlay } from "./AddLeadFormOverlay";
 import { LeadDetailDrawer } from "./LeadDetailDrawer";
 import { LeadFiltersDrawer } from "./LeadFiltersDrawer";
 import { IoCloudUpload } from "react-icons/io5";
+import { FaWhatsapp } from "react-icons/fa";
 import {
   MdAdd,
   MdChevronLeft,
@@ -41,13 +42,14 @@ function CommsPills() {
     <div className="flex flex-row flex-wrap items-center gap-3">
       <button
         type="button"
+        aria-label="Chat on WhatsApp"
         className="relative flex h-9 w-fit cursor-pointer flex-row items-center gap-2 overflow-visible rounded-full border px-3"
         style={{
           backgroundColor: "rgb(229, 230, 241)",
           borderColor: "rgb(205, 205, 220)",
         }}
       >
-        <Image src="/assets/images/whatsApp.svg" alt="chat" width={20} height={20} />
+        <FaWhatsapp size={20} className="shrink-0" style={{ color: "#25D366" }} aria-hidden />
         <span className="text-xs font-medium" style={{ color: "rgb(31, 23, 80)" }}>
           Chat
         </span>
@@ -700,9 +702,14 @@ function LeadTableRow({ row, onOpenLead }: { row: LeadRow; onOpenLead: () => voi
       <td className="!w-[155px] px-3 py-2.5 text-left whitespace-nowrap" style={stickyCellBase()}>
         <div className="flex h-full items-center">
           <div
-            className="flex min-w-32 w-full cursor-pointer items-center justify-center rounded-md px-2 py-1 text-center text-base"
-            style={{ color: "rgb(31, 23, 80)", backgroundColor: stageBg(row.stage) }}
+            className="inline-flex min-w-32 w-full cursor-pointer items-center justify-center rounded-full border-[1.5px] px-5 py-2 text-sm"
+            style={{ color: "rgb(31, 23, 80)", borderColor: STAGE_PILL_BORDER, backgroundColor: "rgb(255, 255, 255)" }}
           >
+            <span
+              className="mr-2 h-4 w-4 shrink-0 rounded-full"
+              style={{ backgroundColor: stageDotColor(row.stage) }}
+              aria-hidden
+            />
             {row.stage}
           </div>
         </div>

@@ -65,8 +65,10 @@ export function LeadDetailDrawer({
       className="fixed inset-0 z-[100] flex h-full w-full flex-col bg-[#e8ebf4] md:flex-row"
       role="presentation"
     >
-      <aside className="hidden h-full min-h-0 w-[300px] shrink-0 flex-col overflow-hidden shadow-[6px_0_40px_-12px_rgba(31,23,80,0.14)] md:flex lg:w-[352px]">
-        <LeadDetailLeftRail lead={lead} onEditLead={onRequestEditLeadForm} onPatchLead={onPatchLead} />
+      <aside className="relative hidden min-h-0 w-[300px] shrink-0 self-stretch overflow-hidden shadow-[6px_0_40px_-12px_rgba(31,23,80,0.14)] md:block lg:w-[352px]">
+        <div className="absolute inset-0 overflow-x-hidden overflow-y-auto overscroll-y-contain [scrollbar-width:thin]">
+          <LeadDetailLeftRail lead={lead} onEditLead={onRequestEditLeadForm} onPatchLead={onPatchLead} />
+        </div>
       </aside>
 
       <div
