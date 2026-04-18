@@ -2,15 +2,10 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  getTasksForLead,
-  getRemarksForLead,
-  type LeadRemark,
-  type LeadRemarkSource,
-} from "@/lib/lead-activity-data";
+import { getTasksForLead, getRemarksForLead, type LeadRemark } from "@/lib/lead-activity-data";
 import { getAiSummaryStripInsightForLead } from "@/lib/lead-ai-summary-strip-data";
 import type { LeadRow } from "@/lib/leads-sample-data";
-import { MdArrowUpward, MdFilterList } from "react-icons/md";
+import { MdArrowUpward } from "react-icons/md";
 import { LeadScoresAiSummaryStrip } from "./LeadScoresAiSummaryStrip";
 import { LeadStatusHistoryCard } from "./LeadStatusHistoryCard";
 
@@ -22,16 +17,6 @@ const scrollFill = "min-h-0 flex-1 overflow-y-auto pr-0.5 [scrollbar-width:thin]
 const columnCard = `${card} flex min-h-[160px] min-w-0 flex-col lg:h-full lg:min-h-0`;
 
 type RemarkSortOrder = "recent-first" | "recent-last";
-
-const REMARK_SOURCES: LeadRemarkSource[] = ["Call feedback form", "Comment", "Change Stage"];
-
-function defaultRemarkSourceFilter(): Record<LeadRemarkSource, boolean> {
-  return {
-    "Call feedback form": true,
-    Comment: true,
-    "Change Stage": true,
-  };
-}
 
 function formatRemarkTimestamp(d: Date): string {
   return new Intl.DateTimeFormat("en-GB", {
@@ -50,8 +35,6 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
   const [noteDraft, setNoteDraft] = useState("");
   const [localRemarks, setLocalRemarks] = useState<LeadRemark[]>([]);
   const [remarkSort, setRemarkSort] = useState<RemarkSortOrder>("recent-first");
-  const [remarkSourceFilter, setRemarkSourceFilter] =
-    useState<Record<LeadRemarkSource, boolean>>(defaultRemarkSourceFilter);
 
   useEffect(() => {
     setLocalRemarks([]);
@@ -84,21 +67,17 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
   }, [lead.assigned, lead.assignedDisplayName, lead.assignedTitle, noteDraft]);
 
   const sortedRemarks = useMemo(() => {
-    const next = remarks.filter((r) => remarkSourceFilter[r.source]);
+    const next = [...remarks];
     next.sort((a, b) =>
       remarkSort === "recent-first" ? b.sortAt - a.sortAt : a.sortAt - b.sortAt,
     );
     return next;
-  }, [remarks, remarkSort, remarkSourceFilter]);
-
-  const toggleRemarkSource = (source: LeadRemarkSource) => {
-    setRemarkSourceFilter((prev) => ({ ...prev, [source]: !prev[source] }));
-  };
+  }, [remarks, remarkSort]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2.5 sm:gap-3">
       <LeadScoresAiSummaryStrip insight={getAiSummaryStripInsightForLead(lead)} />
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-2.5 sm:gap-3 lg:grid-rows-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3.75fr)_minmax(0,2.25fr)] lg:items-stretch lg:gap-3 [&>*]:min-h-0 [&>*]:min-w-0 lg:[&>*]:h-full">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-2.5 sm:gap-3 lg:grid-rows-1 lg:grid-cols-[minmax(0,2.25fr)_minmax(0,2.85fr)_minmax(0,2.55fr)] lg:items-stretch lg:gap-3 [&>*]:min-h-0 [&>*]:min-w-0 lg:[&>*]:h-full">
         <LeadStatusHistoryCard lead={lead} embeddedInGrid />
 
         <section className={columnCard}>
@@ -118,40 +97,12 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
               </select>
             </label>
           </div>
-          {remarks.length > 0 ? (
-            <div className="mb-1.5 rounded-lg border border-slate-100 bg-gradient-to-br from-slate-50/80 to-white px-1.5 py-1 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)] sm:px-2">
-              <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto py-0.5 [scrollbar-width:thin]">
-                <MdFilterList className="h-3.5 w-3.5 shrink-0 text-[#34369C]/45" aria-hidden />
-                <span className="sr-only">Filter remarks by source</span>
-                <div className="flex shrink-0 flex-nowrap items-center gap-1" role="group" aria-label="Remark source filters">
-                  {REMARK_SOURCES.map((src) => {
-                    const on = remarkSourceFilter[src];
-                    return (
-                      <button
-                        key={src}
-                        type="button"
-                        onClick={() => toggleRemarkSource(src)}
-                        className={`rounded-full border px-2 py-0.5 font-outfit text-[10px] font-medium leading-tight transition-all sm:text-[11px] ${
-                          on
-                            ? "border-[#34369C]/30 bg-[#eceefe] text-[#2d2a68] shadow-sm"
-                            : "border-slate-200/90 bg-white/80 text-[#7a7694] hover:border-slate-300 hover:text-[#1F1750]"
-                        }`}
-                        aria-pressed={on}
-                      >
-                        {src}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          ) : null}
-          <label className="sr-only" htmlFor={`note-${lead.id}`}>
-            Add a note
+          <label className="sr-only" htmlFor={`remark-${lead.id}`}>
+            Add a remark
           </label>
           <div className="relative mb-1.5 shrink-0">
             <textarea
-              id={`note-${lead.id}`}
+              id={`remark-${lead.id}`}
               rows={2}
               value={noteDraft}
               onChange={(e) => setNoteDraft(e.target.value)}
@@ -161,7 +112,7 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
                   submitNote();
                 }
               }}
-              placeholder="Add a note…"
+              placeholder="Add a remark"
               className={`min-h-[2.5rem] w-full resize-y rounded-lg border border-slate-200/90 bg-slate-50/50 py-1.5 pb-2 font-outfit text-xs leading-snug text-[#1F1750] placeholder:text-[#a8a4b8] transition-all focus:border-[#34369C]/40 focus:bg-white focus:shadow-[0_0_0_2px_rgba(52,54,156,0.08)] focus:outline-none sm:text-[13px] ${
                 noteDraft.trim() ? "pl-2 pr-11" : "px-2"
               }`}
@@ -170,9 +121,9 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
               <button
                 type="button"
                 onClick={submitNote}
-                title="Send note (Ctrl+Enter)"
+                title="Send remark (Ctrl+Enter)"
                 className="absolute top-1.5 right-1.5 z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#34369C] text-white shadow-md ring-2 ring-white transition hover:bg-[#2d308c] active:scale-[0.96]"
-                aria-label="Send note"
+                aria-label="Send remark"
               >
                 <MdArrowUpward className="h-[18px] w-[18px]" aria-hidden />
               </button>
@@ -182,10 +133,6 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
             {remarks.length === 0 ? (
               <p className="rounded-xl border border-dashed border-slate-200/80 bg-slate-50/40 py-10 text-center font-outfit text-sm text-[#8b87a8]">
                 No remarks yet.
-              </p>
-            ) : sortedRemarks.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-slate-200/80 bg-slate-50/40 py-10 text-center font-outfit text-sm text-[#8b87a8]">
-                No remarks match these filters.
               </p>
             ) : (
               <ul className="space-y-1">
@@ -205,14 +152,9 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
                       <p className="font-outfit text-[12px] leading-snug text-[#1F1750] sm:text-[13px] sm:leading-snug">
                         {r.text}
                       </p>
-                      <div className="mt-1 flex min-w-0 flex-nowrap items-center justify-between gap-x-2">
-                        <span className="min-w-0 truncate font-outfit text-[10px] text-[#8b87a8] sm:text-[11px]">
-                          {r.timeLabel} · {r.author}
-                        </span>
-                        <span className="inline-flex max-w-[min(100%,10rem)] shrink-0 items-center rounded-full border border-[#34369C]/15 bg-[#f4f5ff] px-1.5 py-0.5 font-outfit text-[10px] font-medium leading-tight text-[#34369C] sm:text-[11px]">
-                          {r.source}
-                        </span>
-                      </div>
+                      <p className="mt-1 min-w-0 truncate font-outfit text-[10px] text-[#8b87a8] sm:text-[11px]">
+                        {r.timeLabel} · {r.author}
+                      </p>
                     </div>
                   </li>
                 ))}

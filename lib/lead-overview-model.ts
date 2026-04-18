@@ -40,7 +40,8 @@ function dash(v: string) {
   return v && v !== "" ? v : "-";
 }
 
-function maskEmail(email: string): string {
+/** Partially masks email local-part for display (e.g. edit form before unlock). */
+export function maskEmailSensitive(email: string): string {
   if (!email || email === "-") return "-";
   const at = email.indexOf("@");
   if (at < 2) return email;
@@ -50,13 +51,36 @@ function maskEmail(email: string): string {
   return `${local[0]}${"*".repeat(inner)}${local.slice(-1)}${domain}`;
 }
 
+function maskEmail(email: string): string {
+  return maskEmailSensitive(email);
+}
+
+/** Masked WhatsApp for display; preserves strings that already look masked (e.g. `XXXXXX2219`). */
+export function maskWhatsappSensitive(raw: string): string {
+  const t = raw.trim();
+  if (!t || t === "-") return "";
+  if (/[Xx]/.test(t)) return t;
+  const d = raw.replace(/\D/g, "");
+  if (d.length >= 4) return `XXXXXX${d.slice(-4)}`;
+  return t;
+}
+
+/** Lead overview / rail: show +91- plus masked middle when `whatsapp` stores digits (or legacy mask string). */
+function overviewWhatsappDisplay(raw: string): string {
+  if (!raw || raw.trim() === "" || raw === "-") return "-";
+  const t = raw.trim();
+  if (t.startsWith("+")) return t;
+  const m = maskWhatsappSensitive(t);
+  return m ? `+91-${m}` : "-";
+}
+
 function baseFromLead(lead: LeadRow): LeadOverviewValues {
   return {
     fullName: lead.name,
     projectName: lead.project,
     source: lead.source,
     subSource: dash(lead.subSource),
-    whatsapp: lead.whatsapp,
+    whatsapp: overviewWhatsappDisplay(lead.whatsapp),
     alternateNumber: dash(lead.altNumber),
     email: maskEmail(lead.email),
     assignedTo: dash(lead.assignedTitle ?? lead.assignedDisplayName ?? lead.assigned),

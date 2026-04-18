@@ -11,6 +11,7 @@ import {
   selectOptionsWithValue,
 } from "@/lib/lead-field-options";
 import { getLeadOverviewValues } from "@/lib/lead-overview-model";
+import { LEAD_FORM_REQUIRED_ASTERISK_COLOR } from "@/lib/left-rail-field-registry";
 import type { LeadRow } from "@/lib/leads-sample-data";
 import { FiEdit2, FiHome, FiInfo, FiUser } from "react-icons/fi";
 import { EditableLeadSummaryField, emptyToDash } from "./EditableLeadSummaryField";
@@ -29,12 +30,18 @@ function whatsappDigitsDraft(l: LeadRow) {
   return d.slice(-10);
 }
 
-function Field({ label, value }: { label: string; value: string }) {
+function Field({ label, value, labelRequired }: { label: string; value: string; labelRequired?: boolean }) {
   return (
     <div className="col-span-1">
       <div className="flex flex-col">
         <span className={LABEL} style={MUTED}>
           {label}
+          {labelRequired ? (
+            <span style={{ color: LEAD_FORM_REQUIRED_ASTERISK_COLOR }}>
+              {" "}
+              *{" "}
+            </span>
+          ) : null}
         </span>
         <span className={VALUE} style={TEXT}>
           {value}
@@ -112,6 +119,7 @@ export function LeadOverviewPanel({
             label="Full Name"
             lead={lead}
             kind="text"
+            labelRequired
             getDraftValue={(l) => l.name}
             buildPatch={(d, l) => ({ name: d.trim() || l.name })}
             renderDisplay={(l) => getLeadOverviewValues(l).fullName}
@@ -122,6 +130,7 @@ export function LeadOverviewPanel({
             label="Project Name"
             lead={lead}
             kind="text"
+            labelRequired
             getDraftValue={(l) => l.project}
             buildPatch={(d, l) => ({ project: d.trim() || l.project })}
             renderDisplay={(l) => getLeadOverviewValues(l).projectName}
@@ -132,6 +141,7 @@ export function LeadOverviewPanel({
             label="Source"
             lead={lead}
             kind="select"
+            labelRequired
             options={sourceOptions}
             getDraftValue={(l) => l.source || "-"}
             buildPatch={(d) => ({ source: d === "-" ? "-" : d })}
@@ -143,6 +153,7 @@ export function LeadOverviewPanel({
             label="Sub Source"
             lead={lead}
             kind="text"
+            labelRequired
             getDraftValue={(l) => (l.subSource === "-" ? "" : l.subSource)}
             buildPatch={(d) => ({ subSource: emptyToDash(d) })}
             renderDisplay={(l) => getLeadOverviewValues(l).subSource}
@@ -153,6 +164,7 @@ export function LeadOverviewPanel({
             label="WhatsApp Number"
             lead={lead}
             kind="tel"
+            labelRequired
             getDraftValue={whatsappDigitsDraft}
             buildPatch={(d) => ({
               whatsapp: d.replace(/\D/g, "").slice(0, 12) || "-",

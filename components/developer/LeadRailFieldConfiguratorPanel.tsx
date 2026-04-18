@@ -9,7 +9,12 @@ import {
   loadLeftRailFieldConfigFromStorage,
   saveLeftRailFieldConfigToStorage,
 } from "@/lib/left-rail-field-config";
-import { LEFT_RAIL_FIELD_DEFINITIONS, type LeftRailFieldId } from "@/lib/left-rail-field-registry";
+import {
+  isLeftRailFieldRequiredInLeadForm,
+  LEAD_FORM_REQUIRED_ASTERISK_COLOR,
+  LEFT_RAIL_FIELD_DEFINITIONS,
+  type LeftRailFieldId,
+} from "@/lib/left-rail-field-registry";
 
 function moveIndex<T>(arr: T[], from: number, to: number): T[] {
   if (from === to || from < 0 || to < 0 || from >= arr.length || to >= arr.length) return arr;
@@ -196,11 +201,16 @@ export function LeadRailFieldConfiguratorPanel({
                     <BsGripVertical size={14} aria-hidden />
                   </button>
                   <span
-                    className={`min-w-0 flex-1 truncate font-outfit text-[11px] leading-tight ${
+                    className={`inline-flex min-w-0 flex-1 items-baseline gap-0.5 truncate font-outfit text-[11px] leading-tight ${
                       hidden ? "font-normal text-[#b0aec4]" : "font-semibold text-[#1F1750]"
                     }`}
                   >
-                    {labelById.get(id) ?? id}
+                    <span className="min-w-0 truncate">{labelById.get(id) ?? id}</span>
+                    {isLeftRailFieldRequiredInLeadForm(id) ? (
+                      <span className="shrink-0 font-semibold" style={{ color: LEAD_FORM_REQUIRED_ASTERISK_COLOR }}>
+                        *
+                      </span>
+                    ) : null}
                   </span>
                   <button
                     type="button"

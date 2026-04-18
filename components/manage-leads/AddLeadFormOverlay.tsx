@@ -4,8 +4,10 @@ import type { ReactNode } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { IoChevronBack } from "react-icons/io5";
-import { MdCalendarToday, MdCheck, MdKeyboardArrowDown } from "react-icons/md";
+import { MdCalendarToday, MdCheck, MdKeyboardArrowDown, MdLockOutline } from "react-icons/md";
 import { buildLeadFormState, type LeadFormState } from "@/lib/lead-form-defaults";
+import { maskEmailSensitive, maskWhatsappSensitive } from "@/lib/lead-overview-model";
+import { LEAD_FORM_REQUIRED_ASTERISK_COLOR } from "@/lib/left-rail-field-registry";
 import type { LeadRow } from "@/lib/leads-sample-data";
 import { useClientMounted } from "@/lib/use-client-mounted";
 
@@ -15,7 +17,6 @@ const inputBg = "rgb(228, 229, 230)";
 const inputBorder = "rgb(228, 229, 230)";
 const labelMuted = "rgb(126, 122, 149)";
 const ink = "rgb(31, 23, 80)";
-const requiredRed = "rgb(255, 102, 120)";
 const placeholderMuted = "rgb(188, 188, 188)";
 const indigo = "rgb(52, 54, 156)";
 const backBtnBg = "rgb(216, 216, 216)";
@@ -37,7 +38,7 @@ function FieldLabel({ children, required }: { children: ReactNode; required?: bo
     <h3 className="mx-5 mb-2 text-base font-medium" style={{ color: labelMuted }}>
       {children}
       {required ? (
-        <span style={{ color: requiredRed }}>
+        <span style={{ color: LEAD_FORM_REQUIRED_ASTERISK_COLOR }}>
           {" "}
           *{" "}
         </span>
@@ -188,6 +189,62 @@ function PhonePrefixInput({
   );
 }
 
+/** Edit lead: masked WhatsApp with (+91) shell until user unlocks. */
+function EditLockedPhoneRow({ maskedDisplay, onUnlock }: { maskedDisplay: string; onUnlock: () => void }) {
+  return (
+    <div
+      className="relative flex w-full items-center rounded-full border-[1.5px] py-2.5 pr-12 pl-5"
+      style={{ backgroundColor: inputBg, borderColor: inputBorder }}
+    >
+      <div className="pointer-events-none flex shrink-0 items-center opacity-90">
+        <div
+          className="flex h-8 min-w-28 items-center justify-between rounded-full border bg-transparent px-3 text-base font-medium"
+          style={{ backgroundColor: "rgb(233, 234, 242)", color: ink }}
+        >
+          <span>(+91)</span>
+          <MdKeyboardArrowDown size={22} aria-hidden />
+        </div>
+        <div className="mx-2 h-5 w-px shrink-0" style={{ backgroundColor: "rgb(199, 197, 211)" }} />
+      </div>
+      <span className="min-w-0 flex-1 truncate text-base font-medium" style={{ color: ink, fontSize: 16 }}>
+        {maskedDisplay || "—"}
+      </span>
+      <button
+        type="button"
+        onClick={onUnlock}
+        className="absolute top-1/2 right-2.5 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-[#34369C] transition-colors hover:bg-[#34369C]/10"
+        aria-label="Unlock to view and edit WhatsApp number"
+        title="Unlock to edit"
+      >
+        <MdLockOutline size={22} aria-hidden />
+      </button>
+    </div>
+  );
+}
+
+/** Edit lead: masked email until user unlocks. */
+function EditLockedEmailRow({ maskedDisplay, onUnlock }: { maskedDisplay: string; onUnlock: () => void }) {
+  return (
+    <div
+      className="relative flex w-full items-center overflow-hidden rounded-full border-[1.5px] py-2.5 pr-12 pl-5"
+      style={{ backgroundColor: inputBg, borderColor: inputBorder }}
+    >
+      <span className="min-w-0 flex-1 truncate text-base font-medium" style={{ color: ink, fontSize: 16 }}>
+        {maskedDisplay === "-" ? "" : maskedDisplay}
+      </span>
+      <button
+        type="button"
+        onClick={onUnlock}
+        className="absolute top-1/2 right-2.5 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-[#34369C] transition-colors hover:bg-[#34369C]/10"
+        aria-label="Unlock to view and edit email"
+        title="Unlock to edit"
+      >
+        <MdLockOutline size={22} aria-hidden />
+      </button>
+    </div>
+  );
+}
+
 function PillToggle({
   options,
   value,
@@ -256,6 +313,8 @@ export function AddLeadFormOverlay({
   const [form, setForm] = useState<LeadFormState>(() => buildLeadFormState(lead ?? null));
   const [sheetEntered, setSheetEntered] = useState(false);
   const [prevOpen, setPrevOpen] = useState(open);
+  const [whatsappUnlocked, setWhatsappUnlocked] = useState(false);
+  const [emailUnlocked, setEmailUnlocked] = useState(false);
 
   if (open !== prevOpen) {
     setPrevOpen(open);
@@ -291,6 +350,14 @@ export function AddLeadFormOverlay({
     });
     return () => cancelAnimationFrame(id);
   }, [open]);
+
+  const leadKey = lead?.id ?? "";
+  useEffect(() => {
+    if (!open) return;
+    setForm(buildLeadFormState(lead ?? null));
+    setWhatsappUnlocked(false);
+    setEmailUnlocked(false);
+  }, [open, leadKey]);
 
   const isEdit = Boolean(lead);
 
@@ -361,12 +428,19 @@ export function AddLeadFormOverlay({
                 </div>
                 <div className="mb-7 min-w-0">
                   <FieldLabel required>WhatsApp Number</FieldLabel>
-                  <PhonePrefixInput
-                    id="whatsAppNumber"
-                    maxLength={10}
-                    value={form.whatsappDigits}
-                    onChange={(v) => patch("whatsappDigits", v)}
-                  />
+                  {isEdit && lead && !whatsappUnlocked ? (
+                    <EditLockedPhoneRow
+                      maskedDisplay={maskWhatsappSensitive(lead.whatsapp)}
+                      onUnlock={() => setWhatsappUnlocked(true)}
+                    />
+                  ) : (
+                    <PhonePrefixInput
+                      id="whatsAppNumber"
+                      maxLength={10}
+                      value={form.whatsappDigits}
+                      onChange={(v) => patch("whatsappDigits", v)}
+                    />
+                  )}
                 </div>
                 <div className="mb-7 min-w-0">
                   <FieldLabel>Alternate Number</FieldLabel>
@@ -379,7 +453,14 @@ export function AddLeadFormOverlay({
                 </div>
                 <div className="mb-7 min-w-0">
                   <FieldLabel>Email ID</FieldLabel>
-                  <RoundedInput id="email" type="email" value={form.email} onChange={(v) => patch("email", v)} />
+                  {isEdit && lead && !emailUnlocked ? (
+                    <EditLockedEmailRow
+                      maskedDisplay={maskEmailSensitive(lead.email)}
+                      onUnlock={() => setEmailUnlocked(true)}
+                    />
+                  ) : (
+                    <RoundedInput id="email" type="email" value={form.email} onChange={(v) => patch("email", v)} />
+                  )}
                 </div>
                 <div className="mb-7 min-w-0">
                   <FieldLabel>Assigned To</FieldLabel>

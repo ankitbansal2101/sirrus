@@ -116,14 +116,9 @@ export function WidgetV2CanvasBlockBody({
                     />
                     <div className="min-w-0 flex-1">
                       <p className="font-outfit text-[11px] leading-snug text-[#1F1750]">{r.text}</p>
-                      <div className="mt-0.5 flex flex-wrap items-center justify-between gap-x-1 gap-y-0.5">
-                        <span className="font-outfit text-[9px] text-[#8b87a8]">
-                          {r.timeLabel} · {r.author}
-                        </span>
-                        <span className="inline-flex max-w-[9rem] shrink-0 truncate rounded-full border border-[#34369C]/15 bg-[#f4f5ff] px-1 py-0.5 font-outfit text-[9px] font-medium text-[#34369C]">
-                          {r.source}
-                        </span>
-                      </div>
+                      <p className="mt-0.5 font-outfit text-[9px] text-[#8b87a8]">
+                        {r.timeLabel} · {r.author}
+                      </p>
                     </div>
                   </li>
                 ))}
