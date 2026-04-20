@@ -1,5 +1,5 @@
 export const LEAD_DETAIL_TABS = [
-  "Activity",
+  "Overview",
   "AI Insights",
   "Lead Journey",
   "Lead Overview",

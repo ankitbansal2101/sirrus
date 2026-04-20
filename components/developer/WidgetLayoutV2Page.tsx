@@ -490,7 +490,7 @@ export function WidgetLayoutV2Page() {
                   Drop widgets on <span className="font-semibold text-[#5c5878]">{activeTab?.label ?? "this tab"}</span>
                   .
                 </span>
-                <span className="font-outfit text-[10px] text-[#a8a4b8]">Each tab has its own layout (like Activity vs Lead Journey).</span>
+                <span className="font-outfit text-[10px] text-[#a8a4b8]">Each tab has its own layout (like Overview vs Lead Journey).</span>
               </div>
             ) : null}
 

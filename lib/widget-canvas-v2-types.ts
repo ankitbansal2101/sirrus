@@ -11,7 +11,7 @@ export type PlacedCanvasWidget = {
   z: number;
 };
 
-/** One lead-detail tab (Activity, AI Insights, …) with its own widget canvas. */
+/** One lead-detail tab (Overview, AI Insights, …) with its own widget canvas. */
 export type WidgetCanvasTabState = {
   id: string;
   label: string;

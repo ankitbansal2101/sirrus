@@ -53,6 +53,7 @@ function normalizeDocument(d: WidgetCanvasV2Document): WidgetCanvasV2Document {
     activeTabId: active,
     tabs: d.tabs.map((t) => ({
       ...t,
+      label: t.label === "Activity" ? "Overview" : t.label,
       widgets: t.widgets.filter(isPlacedWidget),
     })),
   };
@@ -60,8 +61,8 @@ function normalizeDocument(d: WidgetCanvasV2Document): WidgetCanvasV2Document {
 
 function migrateLegacyWidgetArray(widgets: PlacedCanvasWidget[]): WidgetCanvasV2Document {
   const base = defaultWidgetCanvasV2Document();
-  const activityIdx = base.tabs.findIndex((t) => t.label === "Activity");
-  const idx = activityIdx >= 0 ? activityIdx : 0;
+  const overviewIdx = base.tabs.findIndex((t) => t.label === "Overview" || t.label === "Activity");
+  const idx = overviewIdx >= 0 ? overviewIdx : 0;
   const tabs = base.tabs.map((t, i) => (i === idx ? { ...t, widgets } : t));
   return { schema: 2, activeTabId: tabs[idx].id, tabs };
 }

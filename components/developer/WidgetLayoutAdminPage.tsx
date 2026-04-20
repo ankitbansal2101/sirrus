@@ -26,7 +26,7 @@ const WIDGET_CATALOG: readonly WidgetCatalogEntry[] = [
   {
     id: "pair",
     title: "PAIR Score",
-    description: "Perception, Ability, Intent, and Readiness score cards on the Activity tab.",
+    description: "Perception, Ability, Intent, and Readiness score cards on the Overview tab.",
     configurator: null,
   },
   {
@@ -38,7 +38,7 @@ const WIDGET_CATALOG: readonly WidgetCatalogEntry[] = [
   {
     id: "open-tasks",
     title: "All Tasks",
-    description: "All tasks with due dates and status (pending, overdue, completed) in the Activity column.",
+    description: "All tasks with due dates and status (pending, overdue, completed) in the Overview column.",
     configurator: null,
   },
   {
@@ -50,20 +50,24 @@ const WIDGET_CATALOG: readonly WidgetCatalogEntry[] = [
   {
     id: "lead-details",
     title: "Lead Details",
-    description: "Main lead detail tabs: Activity, Journey, Overview, stage change, etc.",
+    description: "Main lead detail tabs: Overview (hub), AI Insights, Lead Journey, Lead Overview, stage change, etc.",
     configurator: "leadRail",
   },
   {
     id: "lead-status-history",
     title: "Lead status history",
-    description: "Timeline of stage changes in the Activity grid.",
+    description: "Timeline of stage changes in the Overview hub grid.",
     configurator: null,
   },
 ];
 
+const LOCK_CUSTOMIZATION_MESSAGE = "Customization coming soon";
+
 export function WidgetLayoutAdminPage() {
   /** Which catalog row has its settings panel open (`null` = none). */
   const [openWidgetId, setOpenWidgetId] = useState<string | null>(null);
+  /** Locked-row lock control: brief message after click (also hover via `title` on the button). */
+  const [lockTipWidgetId, setLockTipWidgetId] = useState<string | null>(null);
   const [orderedVisibleIds, setOrderedVisibleIds] = useState<LeftRailFieldId[]>(() =>
     getOrderedVisibleIds(defaultLeftRailFieldConfig()),
   );
@@ -107,21 +111,41 @@ export function WidgetLayoutAdminPage() {
                   return (
                     <li
                       key={w.id}
-                      title={w.description}
-                      className="flex min-h-[1.75rem] items-center justify-start rounded border border-slate-200/90 bg-[#f8f9fc] px-2 py-0.5 shadow-[0_1px_0_rgba(15,23,42,0.04)]"
+                      className="flex min-h-[1.75rem] flex-col rounded border border-slate-200/90 bg-[#f8f9fc] px-2 py-0.5 shadow-[0_1px_0_rgba(15,23,42,0.04)]"
                     >
                       <span className="inline-flex min-w-0 max-w-full items-center gap-1.5">
-                        <span className="min-w-0 truncate font-outfit text-[11px] font-semibold leading-tight text-[#1F1750]">
+                        <span
+                          className="min-w-0 truncate font-outfit text-[11px] font-semibold leading-tight text-[#1F1750]"
+                          title={w.description}
+                        >
                           {w.title}
                         </span>
                         <span className="sr-only">{w.description}</span>
-                        <span
-                          className="inline-flex shrink-0 items-center text-[#9ca3af]"
-                          aria-label={`${w.title}, locked`}
+                        <button
+                          type="button"
+                          title={LOCK_CUSTOMIZATION_MESSAGE}
+                          aria-label={`${w.title}, locked. ${LOCK_CUSTOMIZATION_MESSAGE}`}
+                          className="inline-flex shrink-0 cursor-pointer items-center rounded p-0.5 text-[#9ca3af] transition-colors hover:bg-slate-200/60 hover:text-[#6b7280] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#34369C]"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setLockTipWidgetId(w.id);
+                            window.setTimeout(() => {
+                              setLockTipWidgetId((cur) => (cur === w.id ? null : cur));
+                            }, 2800);
+                          }}
                         >
                           <FiLock size={11} strokeWidth={2.25} aria-hidden />
-                        </span>
+                        </button>
                       </span>
+                      {lockTipWidgetId === w.id ? (
+                        <p
+                          className="mt-1 font-outfit text-[10px] font-medium leading-snug text-[#34369C]"
+                          role="status"
+                        >
+                          {LOCK_CUSTOMIZATION_MESSAGE}
+                        </p>
+                      ) : null}
                     </li>
                   );
                 }
@@ -183,7 +207,7 @@ export function WidgetLayoutAdminPage() {
           className="order-2 flex min-h-0 w-full min-w-0 flex-1 flex-col lg:min-h-[min(72vh,820px)]"
           aria-label="Lead detail preview"
         >
-          {/* Same surface as manage-leads drawer — no extra padded “workspace” so Activity columns match prod width. */}
+          {/* Same surface as manage-leads drawer — no extra padded “workspace” so Overview hub columns match prod width. */}
           <div className="flex h-[min(52vh,520px)] min-h-[300px] w-full flex-1 flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-[#e8ebf4] sm:h-[min(56vh,580px)] lg:h-[min(68vh,760px)] lg:max-h-[calc(100dvh-6rem)]">
             <LeadDetailPagePreview
               builderCanvas

@@ -46,7 +46,7 @@ Operators spend most of their time on the **all leads** list and the **lead deta
 |--------|----------------|--------|
 | **Sales / CRM user** | Find lead, open details, act (call, notes, tasks, stage). | App → **Manage leads** (`/developer/manage-leads` in this repo). |
 | **Org admin / product** | Tune visible summary fields; sanity-check layout. | **Developer → Widget & layout** (`/developer/widgets-config`). |
-| **Engineer / QA** | Validate lead shell, Activity hub, V2 sync. | **Developer → Lead detail (track 2)** (`/developer/lead-detail`) — uses V2 storage + `LeadDetailPagePreview` with `syncV2Configurator`. |
+| **Engineer / QA** | Validate lead shell, Overview hub, V2 sync. | **Developer → Lead detail (track 2)** (`/developer/lead-detail`) — uses V2 storage + `LeadDetailPagePreview` with `syncV2Configurator`. |
 
 ---
 
@@ -57,7 +57,7 @@ Operators spend most of their time on the **all leads** list and the **lead deta
 1. User is on **all leads** (stage tabs, pagination, search, filters, add lead).
 2. User clicks a **row** (or equivalent) to select a lead.
 3. **`LeadDetailDrawer`** opens (fixed overlay): left rail + main area.
-4. User switches **tabs** (Activity default), reads/edits where supported, closes drawer (**Escape** or close control).
+4. User switches **tabs** (Overview default), reads/edits where supported, closes drawer (**Escape** or close control).
 5. **Edge:** drawer sets `document.body.style.overflow = 'hidden'` while open; restored on close.
 
 ### 4.2 Org admin: configure left rail (V1)
@@ -105,11 +105,11 @@ Operators spend most of their time on the **all leads** list and the **lead deta
 
 **Source:** `lib/lead-detail-tabs.ts` — `LEAD_DETAIL_TABS`:
 
-1. **Activity** — real content: `LeadActivityHub`.
+1. **Overview** — real content: `LeadActivityHub`.
 2. **AI Insights** — placeholder: *“AI Insights — content placeholder”*.
 3. **Lead Journey** — `LeadJourneyPanel` (`variant="full"`, filters, collapsible dates).
 4. **Lead Overview** — `LeadOverviewPanel` (inline edits / `onPatchLead`).
-5. **Change Stage** — `LeadStageChangeForm`; cancel returns to Activity tab index 0 on save path in preview.
+5. **Change Stage** — `LeadStageChangeForm`; cancel returns to Overview tab index 0 on save path in preview.
 6. **Quotations** — placeholder: *“Quotations — content placeholder”*.
 
 **Edge:** Tab index is client state; switching lead resets some child state via `key={lead.id}` where applicable (e.g. stage form).
@@ -162,10 +162,10 @@ Operators spend most of their time on the **all leads** list and the **lead deta
 
 ---
 
-## 7. Activity tab — widget-level detail
+## 7. Overview tab — widget-level detail
 
 **Component:** `LeadActivityHub.tsx`  
-**Layout:** Top full-width **PAIR + AI summary strip**; below, **3-column grid** on large screens: **Lead status history** \| **Remarks** \| **All tasks** (proportions `2fr / 3.75fr / 2.25fr`).
+**Layout:** Top full-width **PAIR + AI summary strip**; below, **3-column grid** on large screens: **Lead status history** \| **Remarks** \| **All tasks** (proportions `2.25fr / 2.85fr / 2.55fr`).
 
 ### 7.1 PAIR / AI summary strip (`LeadScoresAiSummaryStrip`)
 
@@ -224,12 +224,12 @@ Each row: **title**, optional **lock** or **Configure** + chevron.
 
 | Catalog `id` | Title | Description (tooltip + `sr-only` on locked rows) | Configurator |
 |--------------|-------|-----------------------------------------------------|--------------|
-| `pair` | PAIR Score | Perception, Ability, Intent, and Readiness score cards on the Activity tab. | Locked |
+| `pair` | PAIR Score | Perception, Ability, Intent, and Readiness score cards on the Overview tab. | Locked |
 | `ai-summary` | AI Summary | AI-generated summary strip with expandable rationale. | Locked |
-| `open-tasks` | All Tasks | All tasks with due dates and status (pending, overdue, completed) in the Activity column. | Locked |
+| `open-tasks` | All Tasks | All tasks with due dates and status (pending, overdue, completed) in the Overview column. | Locked |
 | `notes` | Notes | Remarks and filters (Call feedback, comments, stage changes). | Locked |
-| `lead-details` | Lead Details | Main lead detail tabs: Activity, Journey, Overview, stage change, etc. | **leadRail** — `LeadRailFieldConfiguratorPanel` |
-| `lead-status-history` | Lead status history | Timeline of stage changes in the Activity grid. | Locked |
+| `lead-details` | Lead Details | Main lead detail tabs: Overview (hub), AI Insights, Lead Journey, Lead Overview, stage change, etc. | **leadRail** — `LeadRailFieldConfiguratorPanel` |
+| `lead-status-history` | Lead status history | Timeline of stage changes in the Overview hub grid. | Locked |
 
 **Locked row aria:** `{title}, locked`.
 
@@ -390,7 +390,7 @@ Each row: **title**, optional **lock** or **Configure** + chevron.
 | Lead detail drawer | `LeadDetailDrawer.tsx` |
 | Lead detail preview | `LeadDetailPagePreview.tsx` |
 | Left rail | `LeadDetailLeftRail.tsx`, `LeftRailSummaryFields.tsx`, `EditableLeadSummaryField.tsx` |
-| Activity hub | `LeadActivityHub.tsx`, `LeadStatusHistoryCard.tsx`, `LeadScoresAiSummaryStrip.tsx` |
+| Overview hub | `LeadActivityHub.tsx`, `LeadStatusHistoryCard.tsx`, `LeadScoresAiSummaryStrip.tsx` |
 | V1 page | `WidgetLayoutAdminPage.tsx` |
 | Field panel | `LeadRailFieldConfiguratorPanel.tsx` |
 | Registry / persistence | `left-rail-field-registry.ts`, `left-rail-field-config.ts`, `useLeftRailFieldConfig.ts` |

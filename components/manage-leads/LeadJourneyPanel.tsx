@@ -325,11 +325,11 @@ function renderEvent(ev: JourneyEvent, compact?: boolean) {
 
 export type LeadJourneyPanelProps = {
   lead: LeadRow;
-  /** Tighter vertical rhythm for embedded Activity hub. */
+  /** Tighter vertical rhythm for embedded Overview hub. */
   variant?: "full" | "compact";
   showFilters?: boolean;
   collapsibleDates?: boolean;
-  /** Optional scroll container (e.g. max height inside Activity). */
+  /** Optional scroll container (e.g. max height inside Overview). */
   scrollClassName?: string;
 };
 

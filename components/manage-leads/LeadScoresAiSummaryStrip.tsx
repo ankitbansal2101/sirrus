@@ -11,13 +11,40 @@ const bodyMuted = "rgb(126, 122, 149)";
 const bodyDark = "rgb(53, 47, 88)";
 const labelBlue = "rgb(52, 54, 156)";
 
+const pairGradientFrameStyle = {
+  backgroundImage:
+    "linear-gradient(rgba(255, 255, 255, 0.898), rgba(255, 255, 255, 0.898)), linear-gradient(109.4deg, rgb(10, 216, 234) -9.52%, rgb(98, 48, 201) 55.34%, rgb(230, 128, 178) 125.99%)",
+} as const;
+
+function AiGeneratedSummaryChrome() {
+  return (
+    <>
+      <div className="flex flex-row">
+        <Image
+          src="/assets/images/aiSummaryIcon.svg"
+          alt="ai generated summary"
+          width={32}
+          height={32}
+          className="mb-1 mr-1 shrink-0"
+        />
+        <Image
+          src="/assets/images/aiGeneratedSummary.svg"
+          alt="ai generated summary"
+          width={150}
+          height={90}
+          className="ml-2 h-8 w-44 shrink-0 object-contain object-left"
+        />
+      </div>
+      <div className="my-2 h-[0.8px] w-full shrink-0" style={{ backgroundColor: "rgb(98, 92, 135)" }} />
+    </>
+  );
+}
+
 const SCORE_CARDS = [
   {
     title: "Perception" as const,
     bg: "rgb(253, 240, 171)",
     border: "rgb(214, 185, 29)",
-    detailBg: "rgb(250, 251, 234)",
-    detailBorder: "rgb(214, 185, 29)",
     detailText:
       "The customer does not express any opinions or ask questions about the builder's credibility, project quality, or reputation. Therefore, based on the definition, a score of NA is assigned.",
   },
@@ -25,8 +52,6 @@ const SCORE_CARDS = [
     title: "Ability" as const,
     bg: "rgb(194, 250, 213)",
     border: "rgb(97, 195, 124)",
-    detailBg: "rgb(240, 252, 244)",
-    detailBorder: "rgb(97, 195, 124)",
     detailText:
       "There is not enough conversation data to assess the lead's financial capacity, decision-making authority, or ability to proceed. A score of NA is assigned until more signals are available.",
   },
@@ -34,8 +59,6 @@ const SCORE_CARDS = [
     title: "Intent" as const,
     bg: "rgb(197, 235, 255)",
     border: "rgb(56, 127, 210)",
-    detailBg: "rgb(240, 249, 255)",
-    detailBorder: "rgb(56, 127, 210)",
     detailText:
       "The lead has not yet stated clear purchase intent, timeline, or product preferences in captured interactions. Based on the rubric, a score of NA is assigned.",
   },
@@ -43,8 +66,6 @@ const SCORE_CARDS = [
     title: "Readiness" as const,
     bg: "rgb(255, 180, 164)",
     border: "rgb(252, 83, 89)",
-    detailBg: "rgb(255, 245, 242)",
-    detailBorder: "rgb(252, 83, 89)",
     detailText:
       "Readiness to move forward (documentation, visits, or next steps) cannot be determined from current data. A score of NA is assigned pending further engagement.",
   },
@@ -54,7 +75,7 @@ type PairTitle = (typeof SCORE_CARDS)[number]["title"];
 
 type Props = {
   insight: LeadAiSummaryStripInsight | null;
-  /** `full` = Activity tab; `scores` / `summary` = canvas widget slices. */
+  /** `full` = Overview tab (PAIR + hub); `scores` / `summary` = canvas widget slices. */
   sections?: "full" | "scores" | "summary";
 };
 
@@ -147,110 +168,62 @@ export function LeadScoresAiSummaryStrip({ insight, sections = "full" }: Props) 
         <div
           id={`pair-rationale-${expandedConfig.title}`}
           role="region"
-          aria-label={`${expandedConfig.title} rationale`}
-          className="mt-1.5 flex w-full flex-col rounded-xl p-2 sm:mt-2 sm:rounded-2xl sm:p-2.5"
-          style={{
-            backgroundColor: expandedConfig.detailBg,
-            borderColor: expandedConfig.detailBorder,
-            borderWidth: 2,
-            borderStyle: "solid",
-            boxShadow: `inset 3px 0 0 0 ${expandedConfig.detailBorder}`,
-          }}
+          aria-label={`${expandedConfig.title} score rationale`}
+          className="mt-3 flex w-full flex-col rounded-[1.75rem] border-[0.0875rem] border-transparent bg-origin-border p-4 [background-clip:padding-box,border-box] sm:mt-4"
+          style={pairGradientFrameStyle}
         >
-          <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-black/[0.06] pb-2">
-            <span
-              className="inline-flex items-center rounded-md border px-2 py-0.5 font-outfit text-[10px] font-bold uppercase tracking-wide sm:text-[11px]"
-              style={{
-                backgroundColor: expandedConfig.bg,
-                borderColor: expandedConfig.border,
-                color: ink,
-              }}
-            >
-              {expandedConfig.title}
-            </span>
-            <span className="font-outfit text-[10px] font-semibold text-[#5c5878] sm:text-[11px]">
-              NA<span className="font-medium text-[#8b87a8]">/5</span>
-              <span className="mx-1.5 text-[#c4c0d4]" aria-hidden>
-                ·
+          <AiGeneratedSummaryChrome />
+          <div className="mt-1 flex">
+            <FaCircle className="mr-2 mt-2 shrink-0" size={5} style={{ color: bodyDark }} aria-hidden />
+            <span className="w-full font-outfit text-sm font-normal" style={{ color: labelBlue }}>
+              <span className="font-outfit text-sm font-normal leading-snug" style={{ color: bodyDark }}>
+                {expandedConfig.detailText}
               </span>
-              <span className="font-normal text-[#34369C]">Rationale</span>
             </span>
-          </div>
-          <div>
-            <div className="flex">
-              <FaCircle className="mr-2 mt-2 shrink-0" size={5} style={{ color: expandedConfig.border }} aria-hidden />
-              <span className="w-full font-outfit text-xs font-normal sm:text-[13px]" style={{ color: labelBlue }}>
-                <span className="font-outfit text-xs font-normal leading-snug sm:text-[13px]" style={{ color: ink }}>
-                  {expandedConfig.detailText}
-                </span>
-              </span>
-            </div>
           </div>
         </div>
       ) : null}
 
       {showSummary ? (
-      <div
-        className={`w-full rounded-xl border-[0.0875rem] border-transparent bg-origin-border p-2.5 sm:rounded-2xl sm:p-3 [background-clip:padding-box,border-box] ${
-          showScores ? "mt-1.5 sm:mt-2" : "mt-0"
-        }`}
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255, 255, 255, 0.898), rgba(255, 255, 255, 0.898)), linear-gradient(109.4deg, rgb(10, 216, 234) -9.52%, rgb(98, 48, 201) 55.34%, rgb(230, 128, 178) 125.99%)",
-        }}
-      >
-        <div className="flex min-w-0 flex-row flex-wrap items-center gap-1.5">
-          <Image
-            src="/assets/images/aiSummaryIcon.svg"
-            alt="ai generated summary"
-            width={24}
-            height={24}
-            className="h-6 w-6 shrink-0"
-          />
-          <Image
-            src="/assets/images/aiGeneratedSummary.svg"
-            alt="ai generated summary"
-            width={150}
-            height={32}
-            className="ml-0 h-6 min-w-0 w-auto max-w-full object-contain object-left sm:max-w-[11rem]"
-          />
-        </div>
-        <div className="my-1.5 h-px w-full sm:my-2" style={{ backgroundColor: "rgb(98, 92, 135)" }} />
+        <div
+          className={`w-full rounded-[1.75rem] border-[0.0875rem] border-transparent bg-origin-border p-4 [background-clip:padding-box,border-box] ${
+            showScores ? "mt-3 sm:mt-4" : "mt-0"
+          }`}
+          style={pairGradientFrameStyle}
+        >
+          <AiGeneratedSummaryChrome />
 
-        <div className="max-h-[min(22vh,9.5rem)] overflow-y-auto pr-0.5 [scrollbar-width:thin] sm:max-h-[min(26vh,11rem)] lg:max-h-[min(28vh,12rem)]">
-          <div className="flex">
-            <FaCircle className="mr-1.5 mt-1.5 shrink-0" style={{ color: hasInsight ? bodyDark : bodyMuted }} size={5} />
-            <span className="w-full font-outfit text-xs font-normal sm:text-[13px]" style={{ color: labelBlue }}>
-              <span
-                className="font-outfit text-xs font-normal leading-snug sm:text-[13px] sm:leading-snug"
-                style={{ color: hasInsight ? bodyDark : bodyMuted }}
-              >
-                {summaryBody}
+          <div className="max-h-[min(22vh,9.5rem)] overflow-y-auto pr-0.5 [scrollbar-width:thin] sm:max-h-[min(26vh,11rem)] lg:max-h-[min(28vh,12rem)]">
+            <div className="mt-1 flex">
+              <FaCircle className="mr-2 mt-2 shrink-0" size={5} style={{ color: hasInsight ? bodyDark : bodyMuted }} aria-hidden />
+              <span className="w-full font-outfit text-sm font-normal" style={{ color: labelBlue }}>
+                <span className="font-outfit text-sm font-normal leading-snug" style={{ color: hasInsight ? bodyDark : bodyMuted }}>
+                  {summaryBody}
+                </span>
               </span>
-            </span>
+            </div>
+
+            {nextSteps ? (
+              <div className="mt-1 flex">
+                <FaCircle className="mr-2 shrink-0" size={5} style={{ color: labelBlue, marginTop: 8 }} aria-hidden />
+                <span className="w-full font-outfit text-sm font-normal" style={{ color: labelBlue }}>
+                  Next Steps :{" "}
+                  <span className="font-outfit text-sm font-normal" style={{ color: bodyDark }}>
+                    {nextSteps}
+                  </span>
+                </span>
+              </div>
+            ) : null}
           </div>
 
-          {nextSteps ? (
-            <div className="mt-1.5 flex sm:mt-2">
-              <FaCircle className="mr-1.5 mt-1.5 shrink-0" style={{ color: labelBlue }} size={5} />
-              <span className="w-full font-outfit text-xs font-normal sm:text-[13px]" style={{ color: labelBlue }}>
-                Next Steps :{" "}
-                <span className="font-outfit text-xs font-normal sm:text-[13px]" style={{ color: bodyDark }}>
-                  {nextSteps}
-                </span>
+          {lastUpdated ? (
+            <div className="mt-2 flex w-full justify-end">
+              <span className="text-right font-outfit text-xs font-medium" style={{ color: "rgb(126, 122, 149)" }}>
+                Last Updated on: {lastUpdated}
               </span>
             </div>
           ) : null}
         </div>
-
-        {lastUpdated ? (
-          <div className="mt-1.5 flex w-full justify-end sm:mt-2">
-            <span className="text-right font-outfit text-[10px] font-medium sm:text-xs" style={{ color: "rgb(126, 122, 149)" }}>
-              Last Updated on: {lastUpdated}
-            </span>
-          </div>
-        ) : null}
-      </div>
       ) : null}
     </div>
   );

@@ -52,7 +52,7 @@ export function isKawalReferenceLead(lead: LeadRow): boolean {
   return lead.id === KAWAL_REFERENCE_LEAD_ID || lead.leadId === KAWAL_REFERENCE_LEAD_NUMBER;
 }
 
-/** Drives which sample payloads power Activity, AI strip, status history, and journey. */
+/** Drives which sample payloads power Overview hub, AI strip, status history, and journey. */
 export function getLeadDetailDataProfile(lead: LeadRow): LeadDetailDataProfile {
   if (lead.id === CONFIGURATOR_V1_PREVIEW_LEAD_ID) return "org_admin_preview";
   if (isKawalReferenceLead(lead)) return "kawal";
