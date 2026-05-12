@@ -4,7 +4,7 @@ import type { ElementType } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MdOutlineContactPage } from "react-icons/md";
+import { MdOutlineContactPage, MdOutlineSettings } from "react-icons/md";
 import { RiSettings2Line } from "react-icons/ri";
 
 type SidebarItem =
@@ -40,6 +40,13 @@ const items: SidebarItem[] = [
     alt: "Widget canvas",
     title: "Widget canvas (track 2 — affects track 2 preview)",
     Icon: RiSettings2Line,
+  },
+  {
+    href: "/settings/details-page-builder",
+    kind: "icon",
+    alt: "Details page builder",
+    title: "Details Page Builder (Settings route)",
+    Icon: MdOutlineSettings,
   },
 ];
 

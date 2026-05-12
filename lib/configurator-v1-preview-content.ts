@@ -112,10 +112,14 @@ export const CONFIGURATOR_V1_PREVIEW_JOURNEY: JourneyDay[] = [
   {
     dateLabel: "10/04/2026",
     events: [
-      { type: "note", text: "Booking completed by Alex Morgan at 07:30 PM" },
       {
-        type: "booking",
-        rows: [
+        type: "fieldUpdate",
+        field: "Stage",
+        oldValue: "Negotiation",
+        newValue: "Booked",
+        timeLabel: "07:31 PM",
+        actorName: "Alex Morgan",
+        blueprintRows: [
           { label: "Booking ID", value: "B0999000001" },
           { label: "Owner Name", value: "John Doe" },
           { label: "Unit No.", value: "Tower A, 1205" },
@@ -124,13 +128,12 @@ export const CONFIGURATOR_V1_PREVIEW_JOURNEY: JourneyDay[] = [
           { label: "Token Amount", value: "—" },
         ],
       },
-      { type: "note", text: "Stage updated to Booked by Alex Morgan at 07:30 PM" },
     ],
   },
   {
     dateLabel: "01/04/2026",
     events: [
-      { type: "note", text: "Alex Morgan called John Doe at 09:39 AM" },
+      { type: "note", text: "Alex Morgan called John Doe at 09:39 AM", timeLabel: "09:39 AM", actorName: "Alex Morgan" },
       {
         type: "callFeedback",
         dot: true,
@@ -149,8 +152,15 @@ export const CONFIGURATOR_V1_PREVIEW_JOURNEY: JourneyDay[] = [
   {
     dateLabel: "31/03/2026",
     events: [
-      { type: "note", text: "Jane Smith updated lead information" },
-      { type: "note", text: "Lead source updated to Website by Jane Smith at 03:46 PM" },
+      { type: "note", text: "Jane Smith updated lead information", timeLabel: "03:40 PM", actorName: "Jane Smith" },
+      {
+        type: "fieldUpdate",
+        field: "Lead source",
+        oldValue: "Referral",
+        newValue: "Website",
+        timeLabel: "03:46 PM",
+        actorName: "Jane Smith",
+      },
       {
         type: "comment",
         author: "Jane Smith",
@@ -161,6 +171,7 @@ export const CONFIGURATOR_V1_PREVIEW_JOURNEY: JourneyDay[] = [
       {
         type: "aiSummary",
         timeLabel: "03:48 PM",
+        actorName: "System",
         bullets: [
           "Agent confirmed the lead’s preferred visit window.",
           "Lead asked for parking and accessibility details.",

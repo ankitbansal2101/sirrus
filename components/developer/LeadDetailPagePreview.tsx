@@ -14,7 +14,7 @@ import { LeadStageChangeForm } from "@/components/manage-leads/LeadStageChangeFo
 import { LEAD_DETAIL_TABS } from "@/lib/lead-detail-tabs";
 import type { LeftRailFieldId } from "@/lib/left-rail-field-registry";
 import type { LeadRow } from "@/lib/leads-sample-data";
-import { widgetsForLeadDetailTabIndex } from "@/lib/widget-canvas-v2-storage";
+import { nodesForLeadDetailTabIndex } from "@/lib/widget-canvas-v2-storage";
 
 function fundingForDrawer(lead: LeadRow) {
   if (lead.drawerFundingSource) return lead.drawerFundingSource;
@@ -52,9 +52,8 @@ export function LeadDetailPagePreview({
 }: Props) {
   const [detailTab, setDetailTab] = useState(0);
   const v2Doc = useWidgetCanvasV2Document(syncV2Configurator);
-  const v2SlotWidgets =
-    syncV2Configurator && v2Doc ? widgetsForLeadDetailTabIndex(v2Doc, detailTab) : [];
-  const showV2TabCanvas = syncV2Configurator && v2SlotWidgets.length > 0;
+  const v2SlotNodes = syncV2Configurator && v2Doc ? nodesForLeadDetailTabIndex(v2Doc, detailTab) : [];
+  const showV2TabCanvas = syncV2Configurator && v2SlotNodes.length > 0;
   /** V2 canvas owns this tab’s layout; fixed rail would duplicate or ignore “removed” lead-details on canvas. */
   const hideFixedLeftRail = showV2TabCanvas;
 
@@ -174,9 +173,10 @@ export function LeadDetailPagePreview({
             >
               {showV2TabCanvas ? (
                 <LeadDetailV2TabCanvas
-                  widgets={v2SlotWidgets}
+                  nodes={v2SlotNodes}
                   lead={lead}
                   leftRailFieldIds={leftRailFieldIds}
+                  onLeadStageChange={patchStage}
                   className="min-h-[min(52vh,560px)] flex-1"
                 />
               ) : detailTab === 0 ? (

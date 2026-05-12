@@ -1,11 +1,32 @@
 export type JourneyNoteEvent = {
   type: "note";
   text: string;
+  /** Left-column time in timeline (e.g. `01:43 PM`). */
+  timeLabel?: string;
+  /** Shown on metadata line: `by {actorName} {date}`. */
+  actorName?: string;
 };
 
+/** Single-field audit (see `formatJourneyFieldUpdateSentence`). */
+export type JourneyFieldUpdateEvent = {
+  type: "fieldUpdate";
+  field: string;
+  oldValue: string;
+  newValue: string;
+  /** Blueprint / stage-transition form fields captured with this change (budget, task, remarks, …). */
+  blueprintRows?: { label: string; value: string }[];
+  timeLabel?: string;
+  actorName?: string;
+};
+
+/** Booking is modeled as a stage transition with a capture form (`rows`). */
 export type JourneyBookingEvent = {
   type: "booking";
   rows: { label: string; value: string }[];
+  /** One-line timeline summary; defaults to a short booking label if omitted. */
+  summaryLine?: string;
+  timeLabel?: string;
+  actorName?: string;
 };
 
 export type JourneyCallFeedbackEvent = {
@@ -14,8 +35,15 @@ export type JourneyCallFeedbackEvent = {
   dot?: boolean;
   durationLabel: string;
   remarks: string;
+  /** Call disposition — omit or empty to show “Not Added” in UI */
+  status?: string;
+  subStatus?: string;
+  /** Show prod-style “Update” CTA (wire to mutation when backend exists) */
+  showUpdate?: boolean;
   scrubLabel?: string;
   audioSrc?: string;
+  timeLabel?: string;
+  actorName?: string;
 };
 
 export type JourneyAiSummaryEvent = {
@@ -23,6 +51,7 @@ export type JourneyAiSummaryEvent = {
   timeLabel: string;
   bullets: string[];
   nextSteps: string;
+  actorName?: string;
 };
 
 export type JourneyCommentEvent = {
@@ -34,12 +63,30 @@ export type JourneyCommentEvent = {
   followupLabel?: string;
 };
 
+/**
+ * Typed timeline row for CRM interactions (lead lifecycle, calls, privacy, SV, …).
+ * Use a dotted `kind` (e.g. `lead.reassign`, `view.masked.email`) so filters and labels
+ * stay consistent; new kinds work without a code change if you only need the default card.
+ */
+export type JourneyStructuredEvent = {
+  type: "structured";
+  kind: string;
+  /** Summary line (same role as a “note” pill). */
+  headline: string;
+  /** Optional compact key/value block under the headline. */
+  rows?: { label: string; value: string }[];
+  timeLabel?: string;
+  actorName?: string;
+};
+
 export type JourneyEvent =
   | JourneyNoteEvent
+  | JourneyFieldUpdateEvent
   | JourneyBookingEvent
   | JourneyCallFeedbackEvent
   | JourneyAiSummaryEvent
-  | JourneyCommentEvent;
+  | JourneyCommentEvent
+  | JourneyStructuredEvent;
 
 export type JourneyDay = {
   dateLabel: string;

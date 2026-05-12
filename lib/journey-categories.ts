@@ -1,10 +1,13 @@
 import type { JourneyDay, JourneyEvent } from "@/lib/lead-journey-types";
+import { structuredFilterBucket } from "@/lib/lead-journey-structured-meta";
 
 export type JourneyCategory = "all" | "system" | "call" | "booking" | "ai" | "comment";
 
 export function eventCategory(ev: JourneyEvent): Exclude<JourneyCategory, "all"> {
   switch (ev.type) {
     case "note":
+      return "system";
+    case "fieldUpdate":
       return "system";
     case "booking":
       return "booking";
@@ -14,6 +17,8 @@ export function eventCategory(ev: JourneyEvent): Exclude<JourneyCategory, "all">
       return "ai";
     case "comment":
       return "comment";
+    case "structured":
+      return structuredFilterBucket(ev.kind);
     default:
       return "system";
   }
