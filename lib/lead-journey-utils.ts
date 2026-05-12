@@ -36,6 +36,58 @@ export function sortJourneyDaysDesc(days: JourneyDay[]): JourneyDay[] {
   });
 }
 
+/** Parse `h:mm AM/PM` (fixture / UI labels) to minutes from midnight for same-day ordering. */
+export function parseJourneyTimeLabelToMinutes(label: string): number | null {
+  const s = label.trim();
+  const m = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const mm = parseInt(m[2], 10);
+  const ap = m[3].toUpperCase();
+  if (h < 1 || h > 12 || mm > 59) return null;
+  if (ap === "AM") {
+    if (h === 12) h = 0;
+  } else if (ap === "PM") {
+    if (h !== 12) h += 12;
+  } else return null;
+  return h * 60 + mm;
+}
+
+function journeyEventTimeMinutes(ev: JourneyEvent): number | null {
+  let raw: string | undefined;
+  switch (ev.type) {
+    case "note":
+    case "fieldUpdate":
+    case "booking":
+    case "callFeedback":
+    case "structured":
+      raw = ev.timeLabel;
+      break;
+    case "aiSummary":
+    case "comment":
+      raw = ev.timeLabel;
+      break;
+    default:
+      return null;
+  }
+  if (!raw?.trim()) return null;
+  return parseJourneyTimeLabelToMinutes(raw);
+}
+
+/** Latest activity first within a single calendar day (uses `timeLabel` when present). */
+export function sortJourneyEventsWithinDayDesc(events: JourneyEvent[]): JourneyEvent[] {
+  const indexed = events.map((ev, index) => ({ ev, index }));
+  indexed.sort((a, b) => {
+    const ma = journeyEventTimeMinutes(a.ev);
+    const mb = journeyEventTimeMinutes(b.ev);
+    if (ma !== null && mb !== null && ma !== mb) return mb - ma;
+    if (ma !== null && mb === null) return -1;
+    if (ma === null && mb !== null) return 1;
+    return b.index - a.index;
+  });
+  return indexed.map((x) => x.ev);
+}
+
 export type JourneyRecency = "all" | "7d" | "30d";
 
 export function filterDaysByRecency(days: JourneyDay[], mode: JourneyRecency, anchorMs: number): JourneyDay[] {

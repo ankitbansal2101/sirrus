@@ -8,6 +8,7 @@ import {
   type JourneyRecency,
   parseJourneyDateLabel,
   sortJourneyDaysDesc,
+  sortJourneyEventsWithinDayDesc,
 } from "@/lib/lead-journey-utils";
 import type { LeadRow } from "@/lib/leads-sample-data";
 import { JourneyZohoTimelineDay } from "@/components/manage-leads/journey/JourneyZohoTimeline";
@@ -55,7 +56,7 @@ export function LeadJourneyPanel({
     const sorted = sortJourneyDaysDesc(daysRaw);
     let d = filterDaysByRecency(sorted, recency, recencyAnchorMs);
     d = filterDaysBySearch(d, search);
-    return d;
+    return d.map((day) => ({ ...day, events: sortJourneyEventsWithinDayDesc(day.events) }));
   }, [daysRaw, recency, search, recencyAnchorMs]);
 
   const firstDate = daysPrepared[0]?.dateLabel;

@@ -10,7 +10,11 @@ import { getRemarksForLead, getTasksForLead } from "@/lib/lead-activity-data";
 import { getAiSummaryStripInsightForLead } from "@/lib/lead-ai-summary-strip-data";
 import { getJourneyForLead } from "@/lib/lead-journey-sample-data";
 import type { JourneyEvent } from "@/lib/lead-journey-types";
-import { formatJourneyFieldUpdateLine } from "@/lib/lead-journey-utils";
+import {
+  formatJourneyFieldUpdateLine,
+  sortJourneyDaysDesc,
+  sortJourneyEventsWithinDayDesc,
+} from "@/lib/lead-journey-utils";
 import { normalizeToPipelineStageId } from "@/lib/lead-stage-options";
 import type { LeftRailFieldId } from "@/lib/left-rail-field-registry";
 import type { LeadRow } from "@/lib/leads-sample-data";
@@ -46,8 +50,15 @@ function renderTaskCells(
   });
 }
 
+function journeyDaysForWidget(lead: LeadRow) {
+  return sortJourneyDaysDesc(getJourneyForLead(lead)).map((d) => ({
+    ...d,
+    events: sortJourneyEventsWithinDayDesc(d.events),
+  }));
+}
+
 function flattenJourneyCalls(lead: LeadRow) {
-  const days = getJourneyForLead(lead);
+  const days = journeyDaysForWidget(lead);
   const rows: { day: string; durationLabel: string; remarks: string }[] = [];
   for (const d of days) {
     for (const ev of d.events) {
@@ -64,7 +75,7 @@ function flattenJourneyCalls(lead: LeadRow) {
 }
 
 function flattenJourneyTimeline(lead: LeadRow, max = 14): string[] {
-  const days = getJourneyForLead(lead);
+  const days = journeyDaysForWidget(lead);
   const lines: string[] = [];
   for (const d of days) {
     for (const ev of d.events) {
