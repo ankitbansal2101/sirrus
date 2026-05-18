@@ -87,7 +87,7 @@ function flattenJourneyTimeline(lead: LeadRow, max = 14): string[] {
 }
 
 function formatJourneyLine(dateLabel: string, ev: JourneyEvent): string {
-  if (ev.type === "note") return `${dateLabel} · ${ev.text}`;
+  if (ev.type === "remark") return `${dateLabel} · ${ev.text}`;
   if (ev.type === "fieldUpdate")
     return `${dateLabel} · ${formatJourneyFieldUpdateLine(ev.field, ev.oldValue, ev.newValue)}`;
   if (ev.type === "callFeedback") return `${dateLabel} · ${ev.durationLabel} · ${ev.remarks || "—"}`;

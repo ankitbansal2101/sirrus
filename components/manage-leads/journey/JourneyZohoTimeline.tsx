@@ -2,7 +2,13 @@
 
 import type { ReactNode } from "react";
 import type { JourneyEvent } from "@/lib/lead-journey-types";
-import { fieldValueForZohoDisplay, journeyEventPreview } from "@/lib/lead-journey-utils";
+import {
+  fieldValueForZohoDisplay,
+  getJourneyWidgetUpfrontRemarks,
+  journeyEventPreview,
+  journeyTextHoverTitle,
+  truncateJourneyText,
+} from "@/lib/lead-journey-utils";
 import { renderJourneyEvent } from "@/components/manage-leads/journey/JourneyTimelineEvent";
 import {
   HiOutlineChatBubbleLeftRight,
@@ -18,13 +24,11 @@ import { MdExpandLess, MdExpandMore } from "react-icons/md";
 
 function zohoTime(ev: JourneyEvent): string | undefined {
   switch (ev.type) {
-    case "note":
+    case "remark":
     case "fieldUpdate":
     case "booking":
     case "callFeedback":
     case "structured":
-      return ev.timeLabel?.trim() || undefined;
-    case "aiSummary":
       return ev.timeLabel?.trim() || undefined;
     case "comment":
       return ev.timeLabel?.trim() || undefined;
@@ -35,13 +39,11 @@ function zohoTime(ev: JourneyEvent): string | undefined {
 
 function zohoActor(ev: JourneyEvent): string | undefined {
   switch (ev.type) {
-    case "note":
+    case "remark":
     case "fieldUpdate":
     case "booking":
     case "callFeedback":
     case "structured":
-      return ev.actorName?.trim() || undefined;
-    case "aiSummary":
       return ev.actorName?.trim() || undefined;
     case "comment":
       return ev.author?.trim() || undefined;
@@ -55,7 +57,7 @@ function zohoIcon(ev: JourneyEvent): ReactNode {
   switch (ev.type) {
     case "fieldUpdate":
       return <HiOutlinePencilSquare className={cls} aria-hidden />;
-    case "note":
+    case "remark":
       return <HiOutlineDocumentText className={cls} aria-hidden />;
     case "booking":
       return <HiOutlineClipboardDocumentList className={cls} aria-hidden />;
@@ -94,22 +96,28 @@ function zohoPrimaryLine(ev: JourneyEvent): ReactNode {
         </p>
       );
     }
-    case "note":
+    case "remark": {
+      const remarkFull = ev.text.trim();
+      const remarkTitle = journeyTextHoverTitle(remarkFull);
       return (
-        <p className="font-outfit text-[13px] leading-snug text-slate-800">
-          <span className="text-slate-600">Note — </span>
-          {ev.text}
-        </p>
+        <div>
+          <p className="font-outfit text-[12px] font-semibold leading-snug text-slate-800">Remark</p>
+          <p
+            className={`mt-0.5 line-clamp-2 font-outfit text-[12px] leading-snug text-slate-600 sm:text-[13px]${remarkTitle ? " cursor-help" : ""}`}
+            title={remarkTitle}
+          >
+            {remarkFull}
+          </p>
+        </div>
       );
+    }
     case "comment":
       return (
         <p className="font-outfit text-[13px] leading-snug text-slate-800">
           <span className="text-slate-600">Comment — </span>
-          {ev.body ? (
-            ev.body
-          ) : (
-            <span className="text-slate-500">Expand for thread</span>
-          )}
+          {!getJourneyWidgetUpfrontRemarks(ev) ? (
+            <span className="text-slate-500">Expand for details</span>
+          ) : null}
         </p>
       );
     case "booking":
@@ -124,7 +132,7 @@ function zohoPrimaryLine(ev: JourneyEvent): ReactNode {
       return (
         <p className="font-outfit text-[13px] leading-snug text-slate-800">
           <span className="text-slate-600">Call — </span>
-          {journeyEventPreview(ev)}
+          {ev.durationLabel}
         </p>
       );
     case "structured": {
@@ -137,13 +145,6 @@ function zohoPrimaryLine(ev: JourneyEvent): ReactNode {
         </p>
       );
     }
-    case "aiSummary":
-      return (
-        <p className="font-outfit text-[13px] leading-snug text-slate-800">
-          <span className="text-slate-600">AI summary — </span>
-          {ev.bullets[0]?.trim() ?? ev.timeLabel}
-        </p>
-      );
     default:
       return (
         <p className="font-outfit text-[13px] leading-snug text-slate-800">
@@ -156,7 +157,6 @@ function zohoPrimaryLine(ev: JourneyEvent): ReactNode {
 function hasExpandableWidget(ev: JourneyEvent): boolean {
   return (
     ev.type === "callFeedback" ||
-    ev.type === "aiSummary" ||
     ev.type === "booking" ||
     ev.type === "comment" ||
     (ev.type === "structured" && !!ev.rows?.length) ||
@@ -181,6 +181,32 @@ function ZohoMeta({ actor, dateLabel }: { actor?: string; dateLabel: string }) {
     <p className="mt-0.5 font-outfit text-[11px] leading-snug text-slate-500">
       by {actor} {dateLabel}
     </p>
+  );
+}
+
+function ZohoUpfrontRemarks({
+  fullText,
+  maxLen = 140,
+  showLabel,
+}: {
+  fullText: string;
+  maxLen?: number;
+  showLabel?: boolean;
+}) {
+  const display = truncateJourneyText(fullText, maxLen);
+  const title = journeyTextHoverTitle(fullText, display);
+  return (
+    <div className="mt-1.5">
+      {showLabel ? (
+        <p className="font-outfit text-[12px] font-medium leading-snug text-slate-800">Remarks</p>
+      ) : null}
+      <p
+        className={`break-words font-outfit text-[12px] leading-snug text-slate-600 sm:text-[13px] ${showLabel ? "mt-0.5" : "mt-1"}${title ? " cursor-help" : ""}`}
+        title={title}
+      >
+        {display}
+      </p>
+    </div>
   );
 }
 
@@ -211,6 +237,7 @@ export function JourneyZohoTimelineDay({ dateLabel, events, compact, expandedRow
           const time = zohoTime(ev);
           const actor = zohoActor(ev);
           const expandable = hasExpandableWidget(ev);
+          const upfrontRemarks = getJourneyWidgetUpfrontRemarks(ev);
           const rowKey = `${dateLabel}::${i}`;
           const open = !!expandedRows[rowKey];
 
@@ -230,6 +257,17 @@ export function JourneyZohoTimelineDay({ dateLabel, events, compact, expandedRow
                     <div className="min-w-0 shrink">
                       {zohoPrimaryLine(ev)}
                       <ZohoMeta actor={actor} dateLabel={dateLabel} />
+                      {upfrontRemarks ? (
+                        <ZohoUpfrontRemarks
+                          fullText={upfrontRemarks}
+                          showLabel={
+                            ev.type === "callFeedback" ||
+                            ev.type === "fieldUpdate" ||
+                            ev.type === "booking" ||
+                            ev.type === "comment"
+                          }
+                        />
+                      ) : null}
                     </div>
                     {expandable ? (
                       <button

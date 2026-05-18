@@ -1,5 +1,8 @@
-export type JourneyNoteEvent = {
-  type: "note";
+/** Compact timeline line — `callLog` (called / missed call) or `text` (user remark). */
+export type JourneyRemarkEvent = {
+  type: "remark";
+  /** Inferred from copy when omitted (`Called`, `Missed Call`, … → callLog). */
+  kind?: "callLog" | "text";
   text: string;
   /** Left-column time in timeline (e.g. `01:43 PM`). */
   timeLabel?: string;
@@ -29,12 +32,20 @@ export type JourneyBookingEvent = {
   actorName?: string;
 };
 
+export type JourneyCallAiSummary = {
+  timeLabel?: string;
+  bullets: string[];
+  nextSteps: string;
+};
+
 export type JourneyCallFeedbackEvent = {
   type: "callFeedback";
   /** Purple timeline dot (prod uses for richer call rows) */
   dot?: boolean;
   durationLabel: string;
   remarks: string;
+  /** Rendered inside the call widget (not a separate timeline row). */
+  aiSummary?: JourneyCallAiSummary;
   /** Call disposition — omit or empty to show “Not Added” in UI */
   status?: string;
   subStatus?: string;
@@ -71,7 +82,7 @@ export type JourneyCommentEvent = {
 export type JourneyStructuredEvent = {
   type: "structured";
   kind: string;
-  /** Summary line (same role as a “note” pill). */
+  /** Summary line (same role as an activity pill). */
   headline: string;
   /** Optional compact key/value block under the headline. */
   rows?: { label: string; value: string }[];
@@ -80,7 +91,7 @@ export type JourneyStructuredEvent = {
 };
 
 export type JourneyEvent =
-  | JourneyNoteEvent
+  | JourneyRemarkEvent
   | JourneyFieldUpdateEvent
   | JourneyBookingEvent
   | JourneyCallFeedbackEvent

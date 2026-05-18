@@ -3,10 +3,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getJourneyForLead } from "@/lib/lead-journey-sample-data";
 import {
+  filterDaysByModuleFilter,
+  JOURNEY_MODULE_FILTERS,
+  type JourneyModuleFilter,
+} from "@/lib/journey-categories";
+import {
   filterDaysByRecency,
   filterDaysBySearch,
   type JourneyRecency,
   parseJourneyDateLabel,
+  prepareJourneyEvents,
   sortJourneyDaysDesc,
   sortJourneyEventsWithinDayDesc,
 } from "@/lib/lead-journey-utils";
@@ -40,6 +46,7 @@ export function LeadJourneyPanel({
   const daysRaw = useMemo(() => getJourneyForLead(lead), [lead]);
   const [recency, setRecency] = useState<JourneyRecency>("all");
   const [search, setSearch] = useState("");
+  const [moduleFilter, setModuleFilter] = useState<JourneyModuleFilter | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [timelineRowOpen, setTimelineRowOpen] = useState<Record<string, boolean>>({});
 
@@ -55,9 +62,13 @@ export function LeadJourneyPanel({
   const daysPrepared = useMemo(() => {
     const sorted = sortJourneyDaysDesc(daysRaw);
     let d = filterDaysByRecency(sorted, recency, recencyAnchorMs);
+    d = filterDaysByModuleFilter(d, moduleFilter);
     d = filterDaysBySearch(d, search);
-    return d.map((day) => ({ ...day, events: sortJourneyEventsWithinDayDesc(day.events) }));
-  }, [daysRaw, recency, search, recencyAnchorMs]);
+    return d.map((day) => ({
+      ...day,
+      events: sortJourneyEventsWithinDayDesc(prepareJourneyEvents(day.events)),
+    }));
+  }, [daysRaw, recency, moduleFilter, search, recencyAnchorMs]);
 
   const firstDate = daysPrepared[0]?.dateLabel;
   useEffect(() => {
@@ -67,7 +78,7 @@ export function LeadJourneyPanel({
       setExpanded(fd ? { [fd]: true } : {});
       setTimelineRowOpen({});
     });
-  }, [collapsibleDates, lead.id, recency, search, daysPrepared]);
+  }, [collapsibleDates, lead.id, recency, moduleFilter, search, daysPrepared]);
 
   const toggleDate = useCallback((label: string) => {
     setExpanded((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -92,6 +103,7 @@ export function LeadJourneyPanel({
   const compact = variant === "compact";
   const dateMb = compact ? "mb-2" : "mb-3";
   const dateText = compact ? "text-[13px]" : "text-[14px]";
+  const hasActiveFilters = !!moduleFilter || !!search.trim();
 
   if (daysRaw.length === 0) {
     return (
@@ -120,6 +132,24 @@ export function LeadJourneyPanel({
                   placeholder="Search…"
                   className="w-full rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2 font-outfit text-[13px] text-slate-800 placeholder:text-slate-400 focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300/40"
                 />
+              </div>
+              <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto">
+                {JOURNEY_MODULE_FILTERS.map((f) => {
+                  const active = moduleFilter === f.id;
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setModuleFilter(active ? null : f.id)}
+                      className={`rounded-full px-3 py-1.5 font-outfit text-[12px] font-medium transition-colors ${
+                        active ? "bg-[#34369C] text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200/80"
+                      }`}
+                      aria-pressed={active}
+                    >
+                      {f.label}
+                    </button>
+                  );
+                })}
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
                 {RECENCY_OPTIONS.map((opt) => {
@@ -164,15 +194,18 @@ export function LeadJourneyPanel({
       {daysPrepared.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 px-4 py-8 text-center">
           <p className="font-outfit text-sm" style={{ color: "rgb(126, 122, 149)" }}>
-            {search.trim() ? "No journey entries match your search." : "No events in the selected date range."}
+            {hasActiveFilters ? "No journey entries match your filters." : "No events in the selected date range."}
           </p>
-          {search.trim() ? (
+          {hasActiveFilters ? (
             <button
               type="button"
-              onClick={() => setSearch("")}
+              onClick={() => {
+                setSearch("");
+                setModuleFilter(null);
+              }}
               className="mt-2 font-outfit text-xs font-semibold text-slate-700 underline"
             >
-              Clear search
+              Clear filters
             </button>
           ) : null}
         </div>

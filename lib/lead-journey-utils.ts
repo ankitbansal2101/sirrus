@@ -1,4 +1,9 @@
-import type { JourneyDay, JourneyEvent } from "@/lib/lead-journey-types";
+import type {
+  JourneyCallAiSummary,
+  JourneyDay,
+  JourneyEvent,
+  JourneyRemarkEvent,
+} from "@/lib/lead-journey-types";
 import { structuredTypeLabel } from "@/lib/lead-journey-structured-meta";
 
 /** Display empty / placeholder field values like Zoho (“blank value”). */
@@ -56,7 +61,7 @@ export function parseJourneyTimeLabelToMinutes(label: string): number | null {
 function journeyEventTimeMinutes(ev: JourneyEvent): number | null {
   let raw: string | undefined;
   switch (ev.type) {
-    case "note":
+    case "remark":
     case "fieldUpdate":
     case "booking":
     case "callFeedback":
@@ -97,10 +102,120 @@ export function filterDaysByRecency(days: JourneyDay[], mode: JourneyRecency, an
   return days.filter((d) => (parseJourneyDateLabel(d.dateLabel) ?? 0) >= cutoff);
 }
 
+const JOURNEY_WIDGET_EMPTY_VALUES = new Set(["", "—", "Not Added", "blank value"]);
+
+/** Whether a widget field value is worth showing in timeline / search (not a placeholder). */
+export function journeyWidgetFieldIsMeaningful(value: string): boolean {
+  const t = value.trim();
+  return t.length > 0 && !JOURNEY_WIDGET_EMPTY_VALUES.has(t);
+}
+
+export function truncateJourneyText(text: string, maxLen = 100): string {
+  const t = text.trim();
+  if (t.length <= maxLen) return t;
+  return `${t.slice(0, maxLen).trimEnd()}…`;
+}
+
+/** Native hover tooltip when journey copy is clipped in the timeline. */
+export function journeyTextHoverTitle(fullText: string, displayText?: string): string | undefined {
+  const full = fullText.trim();
+  if (!full) return undefined;
+  const display = (displayText ?? full).trim();
+  if (display !== full) return full;
+  if (full.length > 72) return full;
+  return undefined;
+}
+
+export function journeyRemarkKind(ev: JourneyRemarkEvent): "callLog" | "text" {
+  if (ev.kind) return ev.kind;
+  const t = ev.text.trim();
+  if (/\bcalled\b/i.test(t) || /\bmissed call\b/i.test(t) || /added a comment/i.test(t)) return "callLog";
+  return "text";
+}
+
+/** Call-log pills are redundant with call widgets — hide from the timeline. */
+export function isCallLogRemark(ev: JourneyEvent): boolean {
+  return ev.type === "remark" && journeyRemarkKind(ev) === "callLog";
+}
+
+export function journeyRemarksRowValue(rows: { label: string; value: string }[] | undefined): string | null {
+  const row = rows?.find((r) => r.label.trim().toLowerCase() === "remarks");
+  if (!row || !journeyWidgetFieldIsMeaningful(row.value)) return null;
+  return row.value.trim();
+}
+
+/** Hide summary rows superseded by explicit field-update events. */
+export function isRedundantJourneyEvent(ev: JourneyEvent): boolean {
+  if (ev.type === "structured" && ev.kind === "lead.edit") return true;
+  if (ev.type === "remark" && /updated lead information/i.test(ev.text)) return true;
+  return false;
+}
+
+export function filterRedundantJourneyEvents(events: JourneyEvent[]): JourneyEvent[] {
+  return events.filter((ev) => !isRedundantJourneyEvent(ev));
+}
+
+function aiSummaryFromEvent(ev: JourneyEvent): JourneyCallAiSummary | undefined {
+  if (ev.type !== "aiSummary") return undefined;
+  return { timeLabel: ev.timeLabel, bullets: ev.bullets, nextSteps: ev.nextSteps };
+}
+
+/** Nest standalone AI summaries into the adjacent call row; drop duplicate AI timeline rows. */
+export function attachAiSummariesToCalls(events: JourneyEvent[]): JourneyEvent[] {
+  const skip = new Set<number>();
+  const out: JourneyEvent[] = [];
+
+  for (let i = 0; i < events.length; i++) {
+    if (skip.has(i)) continue;
+    const ev = events[i];
+
+    if (ev.type === "callFeedback") {
+      let ai: JourneyCallAiSummary | undefined = ev.aiSummary;
+      if (i > 0 && events[i - 1].type === "aiSummary" && !skip.has(i - 1)) {
+        ai = ai ?? aiSummaryFromEvent(events[i - 1]);
+        skip.add(i - 1);
+      }
+      if (i + 1 < events.length && events[i + 1].type === "aiSummary" && !skip.has(i + 1)) {
+        ai = ai ?? aiSummaryFromEvent(events[i + 1]);
+        skip.add(i + 1);
+      }
+      out.push(ai ? { ...ev, aiSummary: ai } : ev);
+      continue;
+    }
+
+    if (ev.type === "aiSummary") continue;
+
+    out.push(ev);
+  }
+
+  return out;
+}
+
+export function prepareJourneyEvents(events: JourneyEvent[]): JourneyEvent[] {
+  const filtered = filterRedundantJourneyEvents(events).filter((ev) => !isCallLogRemark(ev));
+  return attachAiSummariesToCalls(filtered);
+}
+
+/** User remarks from inside a widget — shown upfront on the timeline when present. */
+export function getJourneyWidgetUpfrontRemarks(ev: JourneyEvent): string | null {
+  switch (ev.type) {
+    case "comment":
+      return ev.body?.trim() && journeyWidgetFieldIsMeaningful(ev.body) ? ev.body.trim() : null;
+    case "callFeedback":
+      return journeyWidgetFieldIsMeaningful(ev.remarks) ? ev.remarks.trim() : null;
+    case "fieldUpdate":
+      return journeyRemarksRowValue(ev.blueprintRows);
+    case "booking":
+      return journeyRemarksRowValue(ev.rows);
+    default:
+      return null;
+  }
+}
+
 /** One-line preview for filters / digest rows. */
 export function journeyEventPreview(ev: JourneyEvent): string {
   switch (ev.type) {
-    case "note":
+    case "remark":
       return ev.text;
     case "fieldUpdate": {
       const base = formatJourneyFieldUpdateSentence(ev.field, ev.oldValue, ev.newValue);
@@ -110,12 +225,15 @@ export function journeyEventPreview(ev: JourneyEvent): string {
     }
     case "booking":
       return ev.summaryLine?.trim() || ev.rows.map((r) => `${r.label}: ${r.value}`).join(" · ") || "Booking";
-    case "callFeedback":
-      return `${ev.durationLabel}${ev.status && ev.status !== "Not Added" ? ` · ${ev.status}` : ""}${ev.subStatus && ev.subStatus !== "Not Added" ? ` · ${ev.subStatus}` : ""}${ev.remarks && ev.remarks !== "Not Added" ? ` · ${ev.remarks}` : ""}`.trim() || "Call";
+    case "callFeedback": {
+      const base = `${ev.durationLabel}${ev.status && ev.status !== "Not Added" ? ` · ${ev.status}` : ""}${ev.subStatus && ev.subStatus !== "Not Added" ? ` · ${ev.subStatus}` : ""}${ev.remarks && ev.remarks !== "Not Added" ? ` · ${ev.remarks}` : ""}`.trim() || "Call";
+      const ai = ev.aiSummary?.bullets[0]?.trim();
+      return ai ? `${base} · ${ai}` : base;
+    }
     case "aiSummary":
       return ev.bullets[0]?.trim() ? `${ev.timeLabel} · ${ev.bullets[0]}` : ev.timeLabel;
     case "comment":
-      return `${ev.author}${ev.body ? ` · ${ev.body}` : ""}`;
+      return `${ev.author}${ev.body ? ` · ${ev.body}` : ""}${ev.followupLabel ? ` · ${ev.followupLabel}` : ""}`;
     case "structured": {
       const rowBits =
         ev.rows?.map((r) => `${r.label}: ${r.value}`).join(" · ") ?? "";
@@ -128,8 +246,8 @@ export function journeyEventPreview(ev: JourneyEvent): string {
 
 export function journeyEventTypeLabel(ev: JourneyEvent): string {
   switch (ev.type) {
-    case "note":
-      return "Activity";
+    case "remark":
+      return "Remarks";
     case "fieldUpdate":
       return "Field update";
     case "booking":

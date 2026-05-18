@@ -133,14 +133,19 @@ export const CONFIGURATOR_V1_PREVIEW_JOURNEY: JourneyDay[] = [
   {
     dateLabel: "01/04/2026",
     events: [
-      { type: "note", text: "Alex Morgan called John Doe at 09:39 AM", timeLabel: "09:39 AM", actorName: "Alex Morgan" },
+      {
+        type: "remark",
+        kind: "text",
+        text: "Left voicemail — asked lead to confirm preferred callback window.",
+        timeLabel: "09:39 AM",
+        actorName: "Alex Morgan",
+      },
       {
         type: "callFeedback",
         dot: true,
         durationLabel: "00:02 min",
         remarks: "Left voicemail.",
       },
-      { type: "note", text: "Alex Morgan called John Doe at 06:18 PM" },
       {
         type: "callFeedback",
         dot: true,
@@ -152,7 +157,6 @@ export const CONFIGURATOR_V1_PREVIEW_JOURNEY: JourneyDay[] = [
   {
     dateLabel: "31/03/2026",
     events: [
-      { type: "note", text: "Jane Smith updated lead information", timeLabel: "03:40 PM", actorName: "Jane Smith" },
       {
         type: "fieldUpdate",
         field: "Lead source",
@@ -169,20 +173,33 @@ export const CONFIGURATOR_V1_PREVIEW_JOURNEY: JourneyDay[] = [
         followupLabel: "Status: 31 Mar, 05:01 PM",
       },
       {
-        type: "aiSummary",
+        type: "callFeedback",
+        dot: true,
+        durationLabel: "00:04 min",
+        remarks: "Interested in Saturday tour.",
         timeLabel: "03:48 PM",
-        actorName: "System",
-        bullets: [
-          "Agent confirmed the lead’s preferred visit window.",
-          "Lead asked for parking and accessibility details.",
-          "Call ended with a follow-up task created.",
-        ],
-        nextSteps: "Send directions and a calendar invite for the Saturday tour.",
+        actorName: "Jane Smith",
+        aiSummary: {
+          timeLabel: "03:48 PM",
+          bullets: [
+            "Agent confirmed the lead’s preferred visit window.",
+            "Lead asked for parking and accessibility details.",
+            "Call ended with a follow-up task created.",
+          ],
+          nextSteps: "Send directions and a calendar invite for the Saturday tour.",
+        },
       },
     ],
   },
   {
     dateLabel: "12/02/2026",
-    events: [{ type: "note", text: "New lead added from website by Jane Smith at 07:16 PM" }],
+    events: [
+      {
+        type: "remark",
+        kind: "text",
+        text: "New lead added from website.",
+        actorName: "Jane Smith",
+      },
+    ],
   },
 ];

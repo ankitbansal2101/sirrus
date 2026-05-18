@@ -36,7 +36,13 @@ const KAWAL_LEAD_JOURNEY: JourneyDay[] = [
         timeLabel: "09:35 AM",
         actorName: "kawal gulati",
       },
-      { type: "note", text: "kawal gulati Called Kawal Lead Prasun at 09:39 AM", timeLabel: "09:39 AM", actorName: "kawal gulati" },
+      {
+        type: "remark",
+        kind: "text",
+        text: "No answer on first attempt — will call again after lunch.",
+        timeLabel: "09:39 AM",
+        actorName: "kawal gulati",
+      },
       {
         type: "callFeedback",
         dot: true,
@@ -45,7 +51,6 @@ const KAWAL_LEAD_JOURNEY: JourneyDay[] = [
         timeLabel: "09:40 AM",
         actorName: "kawal gulati",
       },
-      { type: "note", text: "kawal gulati Called Kawal Lead Prasun at 06:18 PM", timeLabel: "06:18 PM", actorName: "kawal gulati" },
       {
         type: "callFeedback",
         dot: true,
@@ -59,7 +64,6 @@ const KAWAL_LEAD_JOURNEY: JourneyDay[] = [
   {
     dateLabel: "31/03/2026",
     events: [
-      { type: "note", text: "kawal gulati Called Kawal Lead Prasun at 02:56 PM", timeLabel: "02:56 PM", actorName: "kawal gulati" },
       {
         type: "callFeedback",
         dot: true,
@@ -75,22 +79,24 @@ const KAWAL_LEAD_JOURNEY: JourneyDay[] = [
           "https://s3tcglsqa.s3.ap-south-1.amazonaws.com/calls/DXP/8607040494/1774953276919.mp3",
       },
       {
-        type: "aiSummary",
-        timeLabel: "04:05 PM",
-        actorName: "System",
-        bullets: [
-          "This transcript is empty. Therefore, no summary can be generated.",
-        ],
-        nextSteps:
-          "Since there is no information available, the agent should focus on gathering basic information about the lead's requirements and preferences.",
+        type: "remark",
+        kind: "text",
+        text: "Lead confirmed weekend slot works; asked for brochure and payment plan PDF to be emailed before the site visit. Mentioned spouse will join the second walkthrough.",
+        timeLabel: "03:00 PM",
+        actorName: "kawal gulati",
       },
-      { type: "note", text: "Kawal Lead Prasun Called Kawal Gulati at 04:06 PM", timeLabel: "04:06 PM", actorName: "Kawal Lead Prasun" },
       {
         type: "callFeedback",
         dot: true,
         durationLabel: "00:00 min",
         remarks: "Not Added",
         timeLabel: "04:06 PM",
+        aiSummary: {
+          timeLabel: "04:05 PM",
+          bullets: ["This transcript is empty. Therefore, no summary can be generated."],
+          nextSteps:
+            "Since there is no information available, the agent should focus on gathering basic information about the lead's requirements and preferences.",
+        },
       },
       {
         type: "structured",
@@ -99,7 +105,6 @@ const KAWAL_LEAD_JOURNEY: JourneyDay[] = [
         timeLabel: "04:07 PM",
         actorName: "Sunil Sabat",
       },
-      { type: "note", text: "Kawal Lead Prasun Called kawaljeet NonAdmin at 04:09 PM", timeLabel: "04:09 PM", actorName: "Kawal Lead Prasun" },
       {
         type: "callFeedback",
         dot: true,
@@ -107,7 +112,6 @@ const KAWAL_LEAD_JOURNEY: JourneyDay[] = [
         remarks: "Not Added",
         timeLabel: "04:09 PM",
       },
-      { type: "note", text: "Sunil Sabat Called Kawal Lead Prasun at 05:38 PM", timeLabel: "05:38 PM", actorName: "Sunil Sabat" },
       {
         type: "callFeedback",
         dot: true,
@@ -121,13 +125,6 @@ const KAWAL_LEAD_JOURNEY: JourneyDay[] = [
   {
     dateLabel: "30/03/2026",
     events: [
-      {
-        type: "structured",
-        kind: "lead.edit",
-        headline: "Vishakh G Updated Lead Information",
-        timeLabel: "03:44 PM",
-        actorName: "Vishakh G",
-      },
       {
         type: "fieldUpdate",
         field: "Name",
@@ -165,7 +162,6 @@ const KAWAL_LEAD_JOURNEY: JourneyDay[] = [
           { label: "Remarks", value: "Strong interest; prefers sea-facing." },
         ],
       },
-      { type: "note", text: "Vishakh G added a comment at 03:46 PM", timeLabel: "03:46 PM", actorName: "Vishakh G" },
       {
         type: "comment",
         author: "Vishakh G",
@@ -174,7 +170,6 @@ const KAWAL_LEAD_JOURNEY: JourneyDay[] = [
         body: "Follow-up scheduled for next week.",
         followupLabel: "Status: 30th Mar, 05:01PM",
       },
-      { type: "note", text: "Vishakh G Called Kawal Lead Prasun at 03:48 PM", timeLabel: "03:48 PM", actorName: "Vishakh G" },
       {
         type: "callFeedback",
         dot: true,
@@ -188,18 +183,16 @@ const KAWAL_LEAD_JOURNEY: JourneyDay[] = [
         actorName: "Vishakh G",
         audioSrc:
           "https://s3tcglsqa.s3.ap-south-1.amazonaws.com/calls/DXP/8607040494/1774865894126.mp3",
-      },
-      {
-        type: "aiSummary",
-        timeLabel: "03:48 PM",
-        actorName: "System",
-        bullets: [
-          "- Agent initiated call to check task.",
-          "- Lead confirmed call connection.",
-          "- Agent ended call.",
-        ],
-        nextSteps:
-          "No action is needed based on this brief interaction. Wait for the next interaction.",
+        aiSummary: {
+          timeLabel: "03:48 PM",
+          bullets: [
+            "- Agent initiated call to check task.",
+            "- Lead confirmed call connection.",
+            "- Agent ended call.",
+          ],
+          nextSteps:
+            "No action is needed based on this brief interaction. Wait for the next interaction.",
+        },
       },
     ],
   },
@@ -248,7 +241,13 @@ const FIXTURE_SMALL_JOURNEY: JourneyDay[] = [
   {
     dateLabel: "15/04/2026",
     events: [
-      { type: "note", text: "Fixture: follow-up note logged (sample journey).", timeLabel: "10:12 AM", actorName: "System" },
+      {
+        type: "remark",
+        kind: "text",
+        text: "Fixture: follow-up remark logged (sample journey).",
+        timeLabel: "10:12 AM",
+        actorName: "System",
+      },
       {
         type: "fieldUpdate",
         field: "Stage",
@@ -261,7 +260,14 @@ const FIXTURE_SMALL_JOURNEY: JourneyDay[] = [
   },
   {
     dateLabel: "14/04/2026",
-    events: [{ type: "note", text: "Fixture: new lead created from portal." }],
+    events: [
+      {
+        type: "remark",
+        kind: "text",
+        text: "Fixture: new lead created from portal.",
+        actorName: "System",
+      },
+    ],
   },
 ];
 

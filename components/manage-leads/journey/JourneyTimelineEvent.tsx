@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useRef, useState } from "react";
-import type { JourneyEvent } from "@/lib/lead-journey-types";
+import type { JourneyCallAiSummary, JourneyEvent } from "@/lib/lead-journey-types";
 import { formatJourneyFieldUpdateSentence } from "@/lib/lead-journey-utils";
 import { FaPen } from "react-icons/fa";
 
@@ -22,7 +22,7 @@ function railMb(compact: boolean | undefined, flushBottom?: boolean) {
   return compact ? "mb-3" : "mb-5";
 }
 
-function JourneyNote({
+function JourneyRemarkPill({
   text,
   compact,
   flushLeft,
@@ -178,6 +178,7 @@ function JourneyCallFeedback({
   showUpdate,
   scrubLabel,
   audioSrc,
+  aiSummary,
   compact,
   flushLeft,
   flushBottom,
@@ -190,6 +191,7 @@ function JourneyCallFeedback({
   showUpdate?: boolean;
   scrubLabel?: string;
   audioSrc?: string;
+  aiSummary?: JourneyCallAiSummary;
   compact?: boolean;
   flushLeft?: boolean;
   flushBottom?: boolean;
@@ -240,6 +242,17 @@ function JourneyCallFeedback({
             {remarksText}
           </p>
         </div>
+        {aiSummary ? (
+          <div className="mt-3">
+            <JourneyAiSummary
+              timeLabel={aiSummary.timeLabel ?? ""}
+              bullets={aiSummary.bullets}
+              nextSteps={aiSummary.nextSteps}
+              compact={compact}
+              embeddedInCall
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -252,6 +265,7 @@ function JourneyAiSummary({
   compact,
   flushLeft,
   flushBottom,
+  embeddedInCall,
 }: {
   timeLabel: string;
   bullets: string[];
@@ -259,9 +273,10 @@ function JourneyAiSummary({
   compact?: boolean;
   flushLeft?: boolean;
   flushBottom?: boolean;
+  embeddedInCall?: boolean;
 }) {
-  const pl = flushLeft ? "pl-0" : "pl-6";
-  const mb = railMb(compact, flushBottom);
+  const pl = embeddedInCall ? "" : flushLeft ? "pl-0" : "pl-6";
+  const mb = embeddedInCall ? "" : railMb(compact, flushBottom);
   const innerPad = compact ? "p-3" : "p-4";
   const titleRow = compact ? "text-[11px]" : "text-[13px]";
   const editPad = compact ? "px-3 py-2 text-xs" : "px-5 py-3 text-sm";
@@ -372,7 +387,17 @@ function JourneyComment({
             <span className="block font-outfit text-[12px] font-light text-[#1F1750]">{timeLabel}</span>
           </div>
         </div>
-        {body ? <p className="mt-4 break-words font-outfit text-[14px] text-[#1F1750] sm:mt-6">{body}</p> : null}
+        {body ? (
+          <div className="mt-4 border-t border-[#e4e4e8]/80 pt-2 sm:mt-6">
+            <h3 className="font-outfit text-[12px] font-medium text-[#1F1750]">Remarks</h3>
+            <p
+              className="mt-1 break-words font-outfit text-[12px] leading-snug sm:text-[13px]"
+              style={{ color: "#7E7A95" }}
+            >
+              {body}
+            </p>
+          </div>
+        ) : null}
         {followupLabel ? (
           <div className="mt-4 sm:mt-6">
             <span className="font-outfit text-[14px] font-medium text-[#1F1750]">Followup Status</span>
@@ -437,14 +462,19 @@ export function renderJourneyEvent(ev: JourneyEvent, compact?: boolean, options?
   const f = options?.flushLeft;
   const b = options?.flushBottom;
   switch (ev.type) {
-    case "note":
-      return <JourneyNote text={ev.text} compact={compact} flushLeft={f} flushBottom={b} />;
+    case "remark":
+      return (
+        <div className={`relative ${f ? "pl-0" : "pl-6"} ${railMb(compact, b)}`}>
+          <p className="font-outfit text-[12px] font-medium text-[#1F1750]">Remark</p>
+          <p className="mt-1 break-words font-outfit text-[13px] leading-snug text-[#7E7A95]">{ev.text}</p>
+        </div>
+      );
     case "fieldUpdate":
       if (options?.blueprintFormOnly && ev.blueprintRows?.length) {
         return <JourneyBooking rows={ev.blueprintRows} compact={compact} flushLeft={f} flushBottom={b} />;
       }
       return (
-        <JourneyNote
+        <JourneyRemarkPill
           text={formatJourneyFieldUpdateSentence(ev.field, ev.oldValue, ev.newValue)}
           compact={compact}
           flushLeft={f}
@@ -464,6 +494,7 @@ export function renderJourneyEvent(ev: JourneyEvent, compact?: boolean, options?
           showUpdate={ev.showUpdate}
           scrubLabel={ev.scrubLabel}
           audioSrc={ev.audioSrc}
+          aiSummary={ev.aiSummary}
           compact={compact}
           flushLeft={f}
           flushBottom={b}

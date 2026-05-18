@@ -54,7 +54,7 @@ export function LeadActivityHub({ lead }: { lead: LeadRow }) {
       "You";
     setLocalRemarks((prev) => [
       {
-        id: `note-local-${now}`,
+        id: `remark-local-${now}`,
         author,
         text,
         timeLabel: formatRemarkTimestamp(new Date(now)),
